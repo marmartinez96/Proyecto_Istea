@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ProdigyPlanningAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d23462d67828cf17dc968d307345335344121928")]
 [assembly: System.Reflection.AssemblyProductAttribute("ProdigyPlanningAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ProdigyPlanningAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

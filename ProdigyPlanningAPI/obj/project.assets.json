@@ -11192,19 +11192,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\marmartinez\\.nuget\\packages\\": {}
+    "C:\\Users\\Manuel\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\marmartinez\\Desktop\\ProyectoIstea\\ProdigyPlanningAPI\\ProdigyPlanningAPI.csproj",
+      "projectUniqueName": "C:\\Users\\Manuel\\Documents\\GitHub\\Proyecto_istea\\ProdigyPlanningAPI\\ProdigyPlanningAPI.csproj",
       "projectName": "ProdigyPlanningAPI",
-      "projectPath": "C:\\Users\\marmartinez\\Desktop\\ProyectoIstea\\ProdigyPlanningAPI\\ProdigyPlanningAPI.csproj",
-      "packagesPath": "C:\\Users\\marmartinez\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\marmartinez\\Desktop\\ProyectoIstea\\ProdigyPlanningAPI\\obj\\",
+      "projectPath": "C:\\Users\\Manuel\\Documents\\GitHub\\Proyecto_istea\\ProdigyPlanningAPI\\ProdigyPlanningAPI.csproj",
+      "packagesPath": "C:\\Users\\Manuel\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Manuel\\Documents\\GitHub\\Proyecto_istea\\ProdigyPlanningAPI\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\marmartinez\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Manuel\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -11224,6 +11224,11 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -11268,7 +11273,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.101\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204\\RuntimeIdentifierGraph.json"
       }
     }
   }
