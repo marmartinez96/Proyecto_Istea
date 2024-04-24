@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using ProdigyPlanningAPI.Models;
-using Microsoft.Extensions.Configuration;
 
 namespace ProdigyPlanningAPI.Data;
 
@@ -37,50 +36,43 @@ public partial class ProdigyPlanningContext : DbContext
             optionsBuilder.UseSqlServer(connectionString);
         }
     }
-        
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__category__3213E83F550993FD");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.HasKey(e => e.Id).HasName("PK__categori__3213E83FC6E8B697");
 
             entity.HasMany(d => d.Events).WithMany(p => p.Categories)
                 .UsingEntity<Dictionary<string, object>>(
                     "CategoryEvent",
                     r => r.HasOne<Event>().WithMany()
-                        .HasForeignKey("EventsId")
+                        .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__category___event__3E52440B"),
+                        .HasConstraintName("FK__category___event__6FE99F9F"),
                     l => l.HasOne<Category>().WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__category___categ__3D5E1FD2"),
+                        .HasConstraintName("FK__category___categ__6EF57B66"),
                     j =>
                     {
-                        j.HasKey("CategoryId", "EventsId").HasName("PK__category__12CF69588000BE2D");
+                        j.HasKey("CategoryId", "EventId").HasName("PK__category__B779E6C6F9A4F5CC");
                         j.ToTable("category_events");
                         j.IndexerProperty<int>("CategoryId").HasColumnName("category_id");
-                        j.IndexerProperty<int>("EventsId").HasColumnName("events_id");
+                        j.IndexerProperty<int>("EventId").HasColumnName("event_id");
                     });
         });
 
         modelBuilder.Entity<Event>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__events__3213E83FA11A6825");
+            entity.HasKey(e => e.Id).HasName("PK__events__3213E83F0186EDBA");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
-
-            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.Events).HasConstraintName("FK__events__created___3F466844");
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.Events).HasConstraintName("FK__events__created___70DDC3D8");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__user__3213E83F92707C31");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.HasKey(e => e.Id).HasName("PK__users__3213E83F54C06594");
         });
 
         OnModelCreatingPartial(modelBuilder);

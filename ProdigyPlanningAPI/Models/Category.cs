@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ProdigyPlanningAPI.Models;
 
-[Table("category")]
+[Table("categories")]
 public partial class Category
 {
     [Key]
@@ -14,7 +14,7 @@ public partial class Category
     public int Id { get; set; }
 
     [Column("name")]
-    [StringLength(100)]
+    [StringLength(50)]
     public string? Name { get; set; }
 
     [ForeignKey("CategoryId")]

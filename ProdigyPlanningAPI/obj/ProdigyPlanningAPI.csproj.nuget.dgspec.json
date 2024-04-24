@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Manuel\\Documents\\GitHub\\Proyecto_istea\\ProdigyPlanningAPI\\ProdigyPlanningAPI.csproj": {}
+    "C:\\Users\\marmartinez\\Desktop\\ProyectoIstea\\Proyecto_Istea\\ProdigyPlanningAPI\\ProdigyPlanningAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Manuel\\Documents\\GitHub\\Proyecto_istea\\ProdigyPlanningAPI\\ProdigyPlanningAPI.csproj": {
+    "C:\\Users\\marmartinez\\Desktop\\ProyectoIstea\\Proyecto_Istea\\ProdigyPlanningAPI\\ProdigyPlanningAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Manuel\\Documents\\GitHub\\Proyecto_istea\\ProdigyPlanningAPI\\ProdigyPlanningAPI.csproj",
+        "projectUniqueName": "C:\\Users\\marmartinez\\Desktop\\ProyectoIstea\\Proyecto_Istea\\ProdigyPlanningAPI\\ProdigyPlanningAPI.csproj",
         "projectName": "ProdigyPlanningAPI",
-        "projectPath": "C:\\Users\\Manuel\\Documents\\GitHub\\Proyecto_istea\\ProdigyPlanningAPI\\ProdigyPlanningAPI.csproj",
-        "packagesPath": "C:\\Users\\Manuel\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Manuel\\Documents\\GitHub\\Proyecto_istea\\ProdigyPlanningAPI\\obj\\",
+        "projectPath": "C:\\Users\\marmartinez\\Desktop\\ProyectoIstea\\Proyecto_Istea\\ProdigyPlanningAPI\\ProdigyPlanningAPI.csproj",
+        "packagesPath": "C:\\Users\\marmartinez\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\marmartinez\\Desktop\\ProyectoIstea\\Proyecto_Istea\\ProdigyPlanningAPI\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Manuel\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\marmartinez\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -34,17 +34,16 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[6.0.29, )"
+            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[7.0.18, )"
@@ -83,7 +82,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.101\\RuntimeIdentifierGraph.json"
         }
       }
     }

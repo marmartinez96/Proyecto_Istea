@@ -14,22 +14,19 @@ public partial class Event
     public int Id { get; set; }
 
     [Column("name")]
-    [StringLength(100)]
+    [StringLength(50)]
     public string? Name { get; set; }
 
     [Column("date", TypeName = "datetime")]
     public DateTime? Date { get; set; }
 
     [Column("location")]
-    [StringLength(100)]
+    [StringLength(50)]
     public string? Location { get; set; }
 
     [Column("description")]
-    [StringLength(100)]
+    [StringLength(50)]
     public string? Description { get; set; }
-
-    [Column("category")]
-    public int? Category { get; set; }
 
     [Column("created_by")]
     public int? CreatedBy { get; set; }
@@ -38,7 +35,7 @@ public partial class Event
     [InverseProperty("Events")]
     public virtual User? CreatedByNavigation { get; set; }
 
-    [ForeignKey("EventsId")]
+    [ForeignKey("EventId")]
     [InverseProperty("Events")]
     public virtual ICollection<Category> Categories { get; set; } = new List<Category>();
 }

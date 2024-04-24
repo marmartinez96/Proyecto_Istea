@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ProdigyPlanningAPI.Data;
-using ProdigyPlanningAPI.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

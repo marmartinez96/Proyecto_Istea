@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ProdigyPlanningAPI.Models;
 
-[Table("user")]
+[Table("users")]
 public partial class User
 {
     [Key]
@@ -22,7 +22,7 @@ public partial class User
     public string? Surname { get; set; }
 
     [Column("email")]
-    [StringLength(100)]
+    [StringLength(255)]
     public string? Email { get; set; }
 
     [Column("password")]
@@ -30,7 +30,7 @@ public partial class User
     public string? Password { get; set; }
 
     [Column("roles")]
-    [StringLength(150)]
+    [StringLength(255)]
     public string? Roles { get; set; }
 
     [InverseProperty("CreatedByNavigation")]
