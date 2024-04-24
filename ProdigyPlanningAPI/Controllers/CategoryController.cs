@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProdigyPlanningAPI.Data;
@@ -8,14 +9,15 @@ namespace ProdigyPlanningAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EventController : ControllerBase
+    public class CategoryController : ControllerBase
     {
         private readonly ProdigyPlanningContext _context;
-        public EventController(ProdigyPlanningContext context)
+        public CategoryController(ProdigyPlanningContext context)
         {
             _context = context;
         }
 
+        [Authorize]
         [HttpGet]
         public IEnumerable<Category> GetCategories() 
         {
