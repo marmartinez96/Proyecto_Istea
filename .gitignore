@@ -45,3 +45,4 @@ msbuild.wrn
 # Database
 database/data
 !database/data/ProdigyPlanning.mdf
+/ProdigyPlanningAPI/obj
