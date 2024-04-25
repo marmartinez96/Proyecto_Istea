@@ -29,7 +29,7 @@ namespace ProdigyPlanningAPI.Controllers
             try
             {
                 _user = _context.Users.FirstOrDefault(a => a.Email == user.Email);
-                if(!BC.EnhancedVerify(user.Password, _user.Password))
+                if(_user != null && !BC.EnhancedVerify(user.Password, _user.Password))
                 {
                     _user = null;
                 }
