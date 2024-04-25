@@ -10,7 +10,6 @@ namespace ProdigyPlanningAPI.Helpers
         {
             try
             {
-
                 var id = identity.Claims.FirstOrDefault(a => a.Type == "id").Value;
 
                 User user = _context.Users.FirstOrDefault(a => a.Id.ToString() == id);

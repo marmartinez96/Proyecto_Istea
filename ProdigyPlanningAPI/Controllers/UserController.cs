@@ -22,6 +22,7 @@ namespace ProdigyPlanningAPI.Controllers
             _context = context;
         }
 
+        [Authorize]
         [HttpPost]
         [Route("UpdatePassword")]
         public dynamic UpdatePassword(ChangePasswordModel passwordModel)
@@ -31,26 +32,80 @@ namespace ProdigyPlanningAPI.Controllers
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
             if (!token.success) return token;
-            
 
             User user = token.result;
-
-            if (passwordModel.OldPassword == passwordModel.ConfirmPassword && BC.EnhancedVerify(passwordModel.OldPassword, user.Password)) 
+            try
             {
-                user.Password = BC.EnhancedHashPassword(passwordModel.NewPassword, 13);
+                if (passwordModel.OldPassword != passwordModel.ConfirmPassword)
+                {
+                    throw new Exception("Las contraseñas no coinciden");
+                }
+
+                if (!BC.EnhancedVerify(passwordModel.OldPassword, user.Password))
+                {
+                    throw new Exception("La contraseña enviada es incorrecta");
+                }
+
+                if (passwordModel.OldPassword == passwordModel.ConfirmPassword && BC.EnhancedVerify(passwordModel.OldPassword, user.Password))
+                {
+                    user.Password = BC.EnhancedHashPassword(passwordModel.NewPassword, 13);
+                    _context.SaveChanges();
+                }
+            }
+            catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+
+            return new
+            {
+                success = success,
+                message = message,
+            };
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("UpdateUser")]
+        public dynamic UpdateUser(User user)
+        {
+            bool success = true;
+            string message = "Campos actualizados exitosamente";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return token;
+        
+            User _user = token.result;
+        
+            try
+            {
+                var emailValidation = _context.Users.FirstOrDefault(a => a.Email == user.Email);
+
+                if (emailValidation != null && emailValidation != _user)
+                {
+                    throw new Exception("Ese email ya esta registrado");
+                }
+
+                if (user.Name != null && user.Name != _user.Name) { _user.Name = user.Name; }
+                if (user.Surname != null && user.Surname != _user.Surname) { _user.Surname = user.Surname; }
+                if (user.Email != null && user.Email != _user.Email) { _user.Email = user.Email; }
+                if (user.Roles != null && user.Roles == "Organizador" && _user.Roles != "[ROLE_ORGANIZER]")
+                {
+                    _user.Roles = "[ROLE_ORGANIZER]";
+                }
+                else if (user.Roles != null && _user.Roles != "[ROLE_USER]")
+                {
+                    _user.Roles = "[ROLE_USER]";
+                }
                 _context.SaveChanges();
             }
-            else if(passwordModel.OldPassword != passwordModel.ConfirmPassword)
+            catch (Exception e)
             {
                 success = false;
-                message = "Las contraseñas no coinciden";
+                message = e.Message;
             }
-            else if(!BC.EnhancedVerify(passwordModel.OldPassword, user.Password))
-            {
-                success = false;
-                message = "La contraseña enviada es incorrecta";
-            }
-
+            
             return new
             {
                 success = success,
