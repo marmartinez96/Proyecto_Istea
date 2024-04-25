@@ -23,6 +23,27 @@ namespace ProdigyPlanningAPI.Controllers
         }
 
         [Authorize]
+        [HttpGet]
+        [Route("GetRoles")]
+        public dynamic GetRoles()
+        {
+            bool success = true;
+            string message = "Success";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return token;
+
+            User user = token.result;
+
+            return new
+            {
+                success = success,
+                message = message,
+                data = user.Roles
+            };
+        }
+
+        [Authorize]
         [HttpPost]
         [Route("UpdatePassword")]
         public dynamic UpdatePassword(ChangePasswordModel passwordModel)
@@ -106,6 +127,37 @@ namespace ProdigyPlanningAPI.Controllers
                 message = e.Message;
             }
             
+            return new
+            {
+                success = success,
+                message = message,
+            };
+        }
+
+        [Authorize]
+        [HttpDelete]
+        [Route("DeleteUser")]
+        public dynamic DeleteUser()
+        {
+            bool success = true;
+            string message = "Usuario eliminado exitosamente";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return token;
+
+            User _user = token.result;
+
+            try
+            {
+                _context.Remove(_user);
+                _context.SaveChanges();
+            }
+            catch(Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+
             return new
             {
                 success = success,
