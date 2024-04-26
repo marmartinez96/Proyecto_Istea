@@ -44,7 +44,7 @@ namespace ProdigyPlanningAPI.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpPatch]
         [Route("UpdatePassword")]
         public dynamic UpdatePassword(ChangePasswordModel passwordModel)
         {
@@ -87,7 +87,7 @@ namespace ProdigyPlanningAPI.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpPatch]
         [Route("UpdateUser")]
         public dynamic UpdateUser(User user)
         {

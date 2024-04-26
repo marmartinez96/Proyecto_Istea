@@ -2,13 +2,18 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using ProdigyPlanningAPI.Data;
+using ProdigyPlanningAPI.Helpers;
 
 namespace ProdigyPlanningAPI.Models;
 
 [Table("events")]
 public partial class Event
 {
+    private readonly ProdigyPlanningContext _context;
+
     [Key]
     [Column("id")]
     public int Id { get; set; }
@@ -38,4 +43,12 @@ public partial class Event
     [ForeignKey("EventId")]
     [InverseProperty("Events")]
     public virtual ICollection<Category> Categories { get; set; } = new List<Category>();
+
+    public Event(int id, ProdigyPlanningContext context) 
+    {
+        _context = context;
+        this.CreatedBy = id;
+        User _user = _context.Users.FirstOrDefault( a => a.Id == id);
+        this.CreatedByNavigation = _user;
+    }
 }
