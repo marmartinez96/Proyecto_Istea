@@ -12,7 +12,7 @@ namespace ProdigyPlanningAPI.Models;
 [Table("events")]
 public partial class Event
 {
-    private readonly ProdigyPlanningContext _context;
+    public readonly ProdigyPlanningContext _context;
 
     [Key]
     [Column("id")]
@@ -50,5 +50,9 @@ public partial class Event
         this.CreatedBy = id;
         User _user = _context.Users.FirstOrDefault( a => a.Id == id);
         this.CreatedByNavigation = _user;
+    }
+
+    public Event()
+    {
     }
 }

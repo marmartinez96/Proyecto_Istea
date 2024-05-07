@@ -27,6 +27,8 @@ var connectionString = builder.Configuration.GetConnectionString("conn_string_ev
 builder.Services.AddDbContext<ProdigyPlanningContext>(x => x.UseSqlServer(connectionString));
 builder.Services.AddControllers().AddNewtonsoftJson(x => { x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore; });
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -34,5 +36,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ejemplo de API"));
 
 app.Run();

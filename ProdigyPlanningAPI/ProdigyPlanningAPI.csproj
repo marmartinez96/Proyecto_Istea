@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.29" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 	  <Using Include="BCrypt.Net.BCrypt" Alias="BC" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.29" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.18" />
