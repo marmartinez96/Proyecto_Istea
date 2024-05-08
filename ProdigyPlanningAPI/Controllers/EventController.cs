@@ -23,9 +23,10 @@ namespace ProdigyPlanningAPI.Controllers
             _context = context;
         }
 
+        [AllowAnonymous]
         [HttpGet]
-        [Route("Get")]
-        public dynamic GetEvent()
+        [Route("GetAll")]
+        public dynamic GetEvents()
         {
             bool success = true;
             string message = "Success";
@@ -48,6 +49,7 @@ namespace ProdigyPlanningAPI.Controllers
             };
         }
 
+        [Authorize]
         [HttpPost]
         [Route("Add")]
         public dynamic AddEvent(Event evnt)
@@ -60,12 +62,12 @@ namespace ProdigyPlanningAPI.Controllers
 
             User user = token.result;
 
-            if (user.Roles != "[ROLE_ADMIN]")
+            if (user.Roles != "[ROLE_ORGANIZER]")
             {
                 return new
                 {
                     success = false,
-                    message = "Necesita permisos de administrador para utilizar este recurso",
+                    message = "Necesita permisos de organizador para utilizar este recurso",
                 };
             }
 
@@ -74,7 +76,10 @@ namespace ProdigyPlanningAPI.Controllers
                 Event _event = new Event();
                 _event.Name = evnt.Name;
                 _event.Location = evnt.Location;
+                _event.Date= evnt.Date;
                 _event.Description = evnt.Description;
+                _event.CreatedBy= user.Id;
+                _event.CreatedByNavigation = user;
                 _context.Events.Add(_event);
                 _context.SaveChanges();
                 message = "Se ha creado el evento " + _event.Name;
@@ -106,12 +111,12 @@ namespace ProdigyPlanningAPI.Controllers
 
             User user = token.result;
 
-            if (user.Roles != "[ROLE_ADMIN]")
+            if (user.Roles != "[ROLE_ORGANIZER]")
             {
                 return new
                 {
                     success = false,
-                    message = "Necesita permisos de administrador para utilizar este recurso",
+                    message = "Necesita permisos de organizador para utilizar este recurso",
                 };
             }
 
@@ -122,13 +127,16 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("El evento que desea modificar no existe");
                 }
-                if (changeEventModel.NewName == _event.Name)
+                if (_event.CreatedByNavigation != user)
                 {
-                    throw new Exception("El nuevo nombre coincide con el anterior");
+                    throw new Exception("El evento solo puede ser modificado por su creador");
                 }
-                _event.Name = changeEventModel.NewName;
+                if (changeEventModel.NewName != null && changeEventModel.NewName != _event.Name) { _event.Name = changeEventModel.NewName; }
+                if(changeEventModel.NewDescription != null && changeEventModel.NewDescription != _event.Description) { _event.Description = changeEventModel.NewDescription;}
+                if(changeEventModel.NewDate != null && changeEventModel.NewDate != _event.Date) { _event.Date = changeEventModel.NewDate;}
+                if(changeEventModel.NewLocation != null && changeEventModel.NewLocation != _event.Location) { _event.Location = changeEventModel.NewLocation;}
                 _context.SaveChanges();
-                message = "Se ha actualizado el nombre del evento " + changeEventModel.OldName + " a: " + _event.Name;
+                message = "Se ha actualizado el evento " + changeEventModel.OldName + " a: " + _event.Name;
             }
             catch (Exception e)
             {
@@ -140,8 +148,6 @@ namespace ProdigyPlanningAPI.Controllers
                 success = success,
                 message = message,
             };
-
-
         }
 
 
@@ -158,12 +164,12 @@ namespace ProdigyPlanningAPI.Controllers
 
             User user = token.result;
 
-            if (user.Roles != "[ROLE_ADMIN]")
+            if (user.Roles != "[ROLE_ORGANIZER]")
             {
                 return new
                 {
                     success = false,
-                    message = "Necesita permisos de administrador para utilizar este recurso",
+                    message = "Necesita permisos de organizador para utilizar este recurso",
                 };
             }
             try
@@ -172,6 +178,10 @@ namespace ProdigyPlanningAPI.Controllers
                 if (_event == null)
                 {
                     throw new Exception("El evento que desea eliminar no existe");
+                }
+                if (_event.CreatedByNavigation != user)
+                {
+                    throw new Exception("El evento solo puede ser eliminado por su creador");
                 }
                 _context.Events.Remove(_event);
                 _context.SaveChanges();

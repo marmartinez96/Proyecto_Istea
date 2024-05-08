@@ -44,14 +44,6 @@ public partial class Event
     [InverseProperty("Events")]
     public virtual ICollection<Category> Categories { get; set; } = new List<Category>();
 
-    public Event(int id, ProdigyPlanningContext context) 
-    {
-        _context = context;
-        this.CreatedBy = id;
-        User _user = _context.Users.FirstOrDefault( a => a.Id == id);
-        this.CreatedByNavigation = _user;
-    }
-
     public Event()
     {
     }
