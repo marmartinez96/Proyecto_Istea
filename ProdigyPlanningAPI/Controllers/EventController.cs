@@ -25,7 +25,6 @@ namespace ProdigyPlanningAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        [Route("GetAll")]
         public dynamic GetEvents()
         {
             bool success = true;
@@ -62,7 +61,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             User user = token.result;
 
-            if (user.Roles != "[ROLE_ORGANIZER]")
+            if (user.Roles != "[ROLE_ORGANIZER]" && user.Roles != "[ROLE_ADMIN]")
             {
                 return new
                 {
@@ -111,7 +110,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             User user = token.result;
 
-            if (user.Roles != "[ROLE_ORGANIZER]")
+            if (user.Roles != "[ROLE_ORGANIZER]" && user.Roles != "[ROLE_ADMIN]")
             {
                 return new
                 {
@@ -131,12 +130,12 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("El evento solo puede ser modificado por su creador");
                 }
-                if (changeEventModel.NewName != null && changeEventModel.NewName != _event.Name) { _event.Name = changeEventModel.NewName; }
+                if(changeEventModel.NewName != null && changeEventModel.NewName != _event.Name) { _event.Name = changeEventModel.NewName; }
                 if(changeEventModel.NewDescription != null && changeEventModel.NewDescription != _event.Description) { _event.Description = changeEventModel.NewDescription;}
                 if(changeEventModel.NewDate != null && changeEventModel.NewDate != _event.Date) { _event.Date = changeEventModel.NewDate;}
                 if(changeEventModel.NewLocation != null && changeEventModel.NewLocation != _event.Location) { _event.Location = changeEventModel.NewLocation;}
                 _context.SaveChanges();
-                message = "Se ha actualizado el evento " + changeEventModel.OldName + " a: " + _event.Name;
+                message = "Se ha actualizado el evento "+ _event.Name;
             }
             catch (Exception e)
             {
@@ -164,7 +163,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             User user = token.result;
 
-            if (user.Roles != "[ROLE_ORGANIZER]")
+            if (user.Roles != "[ROLE_ORGANIZER]" && user.Roles != "[ROLE_ADMIN]")
             {
                 return new
                 {

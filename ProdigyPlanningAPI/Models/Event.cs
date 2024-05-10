@@ -30,7 +30,7 @@ public partial class Event
     public string? Location { get; set; }
 
     [Column("description")]
-    [StringLength(50)]
+    [StringLength(1000)]
     public string? Description { get; set; }
 
     [Column("created_by")]

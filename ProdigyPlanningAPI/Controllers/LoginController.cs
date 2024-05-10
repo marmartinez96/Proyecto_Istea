@@ -95,6 +95,11 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("Ese email ya esta registrado");
                 }
+                if (user.Password == null)
+                {
+                    throw new Exception("El campo contraseña no puede estar vacio");
+                }
+
 
                 _user = new User();
                 _user.Name = user.Name;

@@ -22,6 +22,7 @@ namespace ProdigyPlanningAPI.Controllers
             _context = context;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public dynamic GetCategories() 
         {

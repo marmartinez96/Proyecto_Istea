@@ -131,6 +131,7 @@ namespace ProdigyPlanningAPI.Controllers
             {
                 success = success,
                 message = message,
+                data = _user
             };
         }
 
