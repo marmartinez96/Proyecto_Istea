@@ -89,17 +89,29 @@ namespace ProdigyPlanningAPI.Controllers
             IActionResult response = BadRequest();
             try
             {
+                if (user.Email == null)
+                {
+                    throw new Exception("El campo email no puede estar vacio");
+                }
+
                 var _user = _context.Users.FirstOrDefault(a => a.Email == user.Email);
 
                 if (_user != null)
                 {
                     throw new Exception("Ese email ya esta registrado");
                 }
+                if (user.Name == null)
+                {
+                    throw new Exception("El campo nombre no puede estar vacio");
+                }
+                if (user.Surname == null)
+                {
+                    throw new Exception("El campo apellido no puede estar vacio");
+                }
                 if (user.Password == null)
                 {
                     throw new Exception("El campo contraseña no puede estar vacio");
                 }
-
 
                 _user = new User();
                 _user.Name = user.Name;

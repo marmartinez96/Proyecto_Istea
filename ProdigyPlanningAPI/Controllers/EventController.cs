@@ -72,6 +72,19 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
+                if (evnt.Name == null || evnt.Name.Trim() == "")
+                {
+                    throw new Exception("El campo nombre no puede estar vacio");
+                }
+                if (evnt.Location == null || evnt.Location.Trim() == "")
+                {
+                    throw new Exception("El campo ubicacion no puede estar vacio");
+                }
+                if (evnt.Date == null)
+                {
+                    throw new Exception("El campo fecha no puede estar vacio");
+                }
+
                 Event _event = new Event();
                 _event.Name = evnt.Name;
                 _event.Location = evnt.Location;

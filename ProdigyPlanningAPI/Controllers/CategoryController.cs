@@ -71,6 +71,15 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             { 
+                if(category.Name == null || category.Name.Trim() == "")
+                {
+                    throw new Exception("No se puede crear una categoria con un nombre en blanco");
+                }
+                if(_context.Categories.FirstOrDefault(c => c.Name == category.Name) != null)
+                {
+                    throw new Exception("Ya existe una categoria con ese nombre");
+                }
+
                 Category _category = new Category();
                 _category.Name = category.Name;
                 _context.Categories.Add(_category);
@@ -123,6 +132,10 @@ namespace ProdigyPlanningAPI.Controllers
                 if (changeCategoryModel.NewName == _category.Name)
                 {
                     throw new Exception("El nuevo nombre coincide con el anterior");
+                }
+                if (_context.Categories.FirstOrDefault(c => c.Name == changeCategoryModel.NewName) != null)
+                {
+                    throw new Exception("Ya existe una categoria con ese nombre");
                 }
                 _category.Name = changeCategoryModel.NewName;
                 _context.SaveChanges();
