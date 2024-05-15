@@ -44,6 +44,9 @@ public partial class Event
     [InverseProperty("Events")]
     public virtual ICollection<Category> Categories { get; set; } = new List<Category>();
 
+    [InverseProperty("EventNavigation")]
+    public virtual EventBanner? Banner { get; set; }
+
     public Event()
     {
     }

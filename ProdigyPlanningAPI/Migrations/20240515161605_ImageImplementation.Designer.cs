@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProdigyPlanningAPI.Data;
 
@@ -11,9 +12,11 @@ using ProdigyPlanningAPI.Data;
 namespace ProdigyPlanningAPI.Migrations
 {
     [DbContext(typeof(ProdigyPlanningContext))]
-    partial class ProdigyPlanningContextModelSnapshot : ModelSnapshot
+    [Migration("20240515161605_ImageImplementation")]
+    partial class ImageImplementation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -197,7 +200,8 @@ namespace ProdigyPlanningAPI.Migrations
 
             modelBuilder.Entity("ProdigyPlanningAPI.Models.Event", b =>
                 {
-                    b.Navigation("Banner");
+                    b.Navigation("Banner")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ProdigyPlanningAPI.Models.User", b =>

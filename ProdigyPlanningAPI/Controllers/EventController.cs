@@ -69,7 +69,6 @@ namespace ProdigyPlanningAPI.Controllers
                     message = "Necesita permisos de organizador para utilizar este recurso",
                 };
             }
-
             try
             {
                 if (evnt.Name == null || evnt.Name.Trim() == "")
@@ -94,15 +93,71 @@ namespace ProdigyPlanningAPI.Controllers
                 _event.CreatedByNavigation = user;
                 _context.Events.Add(_event);
                 _context.SaveChanges();
+
                 message = "Se ha creado el evento " + _event.Name;
             }
             catch (Exception e)
             {
                 success = false;
                 message = e.Message;
-
             }
+            return new
+            {
+                success = success,
+                message = message,
+            };
+        }
 
+        [Authorize]
+        [HttpPost]
+        [Route("AddBanner")]
+        public dynamic AddBanner([FromForm]IFormFile formFile, [FromForm]int id)
+        {
+            bool success = true;
+            string message = "El banner fue agregado con exito";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return token;
+
+            User user = token.result;
+
+            try
+            {
+                Event _event = _context.Events.FirstOrDefault(x => x.Id == id);
+                if (formFile == null)
+                {
+                    throw new Exception("Debe enviar una imagen valida");
+                }
+                if (_event == null)
+                {
+                    throw new Exception("Debe enviar un id de evento valido");
+                }
+             
+                if (formFile != null && _event != null)
+                {
+                    EventBanner _eventBanner = _context.EventBanners.FirstOrDefault(x => x.EventId == _event.Id);
+                    if (_eventBanner != null)
+                    {
+                        _context.EventBanners.Remove(_eventBanner);
+                    }
+                    using (MemoryStream stream = new MemoryStream())
+                    {
+                        formFile.CopyTo(stream);
+                        _context.EventBanners.Add(new EventBanner()
+                        {
+                            EventId = _event.Id,
+                            EventNavigation = _event,
+                            EventImage = stream.ToArray()
+                        });
+                        _context.SaveChanges();
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
             return new
             {
                 success = success,
