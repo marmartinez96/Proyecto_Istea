@@ -145,7 +145,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
-                Event _event = _context.Events.FirstOrDefault(c => c.Name == changeEventModel.OldName);
+                Event _event = _context.Events.FirstOrDefault(c => c.Id == changeEventModel.Id);
                 if (_event == null)
                 {
                     throw new Exception("El evento que desea modificar no existe");
