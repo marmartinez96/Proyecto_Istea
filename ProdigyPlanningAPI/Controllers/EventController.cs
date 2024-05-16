@@ -51,7 +51,7 @@ namespace ProdigyPlanningAPI.Controllers
         [Authorize]
         [HttpPost]
         [Route("Add")]
-        public dynamic AddEvent(Event evnt)
+        public dynamic AddEvent(AddEventModel evnt)
         {
             bool success = true;
             string message = "";
@@ -83,6 +83,10 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("El campo fecha no puede estar vacio");
                 }
+                if (evnt.Category == null)
+                {
+                    throw new Exception("El campo categoria no puede estar vacio");
+                }
 
                 Event _event = new Event();
                 _event.Name = evnt.Name;
@@ -91,69 +95,21 @@ namespace ProdigyPlanningAPI.Controllers
                 _event.Description = evnt.Description;
                 _event.CreatedBy= user.Id;
                 _event.CreatedByNavigation = user;
+                user.Events.Add(_event);
+
+                Category _cat = _context.Categories.FirstOrDefault(x => x.Name.ToLower() == evnt.Category.ToLower());
+                if(_cat == null )
+                {
+                    throw new Exception("No se encontro la categoria "+evnt.Category);
+                }
+
+                _event.Categories.Add(_cat);
+                _cat.Events.Add(_event);
                 _context.Events.Add(_event);
                 _context.SaveChanges();
-
                 message = "Se ha creado el evento " + _event.Name;
             }
             catch (Exception e)
-            {
-                success = false;
-                message = e.Message;
-            }
-            return new
-            {
-                success = success,
-                message = message,
-            };
-        }
-
-        [Authorize]
-        [HttpPost]
-        [Route("AddBanner")]
-        public dynamic AddBanner([FromForm]IFormFile formFile, [FromForm]int id)
-        {
-            bool success = true;
-            string message = "El banner fue agregado con exito";
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
-
-            User user = token.result;
-
-            try
-            {
-                Event _event = _context.Events.FirstOrDefault(x => x.Id == id);
-                if (formFile == null)
-                {
-                    throw new Exception("Debe enviar una imagen valida");
-                }
-                if (_event == null)
-                {
-                    throw new Exception("Debe enviar un id de evento valido");
-                }
-             
-                if (formFile != null && _event != null)
-                {
-                    EventBanner _eventBanner = _context.EventBanners.FirstOrDefault(x => x.EventId == _event.Id);
-                    if (_eventBanner != null)
-                    {
-                        _context.EventBanners.Remove(_eventBanner);
-                    }
-                    using (MemoryStream stream = new MemoryStream())
-                    {
-                        formFile.CopyTo(stream);
-                        _context.EventBanners.Add(new EventBanner()
-                        {
-                            EventId = _event.Id,
-                            EventNavigation = _event,
-                            EventImage = stream.ToArray()
-                        });
-                        _context.SaveChanges();
-                    }
-                }
-            }
-            catch(Exception e)
             {
                 success = false;
                 message = e.Message;
@@ -202,6 +158,17 @@ namespace ProdigyPlanningAPI.Controllers
                 if(changeEventModel.NewDescription != null && changeEventModel.NewDescription != _event.Description) { _event.Description = changeEventModel.NewDescription;}
                 if(changeEventModel.NewDate != null && changeEventModel.NewDate != _event.Date) { _event.Date = changeEventModel.NewDate;}
                 if(changeEventModel.NewLocation != null && changeEventModel.NewLocation != _event.Location) { _event.Location = changeEventModel.NewLocation;}
+
+                Category _cat = _context.Categories.FirstOrDefault(x => x.Name.ToLower() == changeEventModel.NewCategory.ToLower());
+                if (_cat == null)
+                {
+                    throw new Exception("No se encontro la categoria " + changeEventModel.NewCategory);
+                }
+                if (!_event.Categories.Contains(_cat))
+                {
+                    _event.Categories.Add(_cat);
+                    _cat.Events.Add(_event);
+                }
                 _context.SaveChanges();
                 message = "Se ha actualizado el evento "+ _event.Name;
             }
@@ -221,7 +188,7 @@ namespace ProdigyPlanningAPI.Controllers
         [Authorize]
         [HttpDelete]
         [Route("Delete")]
-        public dynamic DeleteEvento(Event evnt)
+        public dynamic DeleteEvent(Event evnt)
         {
             bool success = true;
             string message = "";
@@ -265,6 +232,254 @@ namespace ProdigyPlanningAPI.Controllers
                 message = message,
             };
         }
+
+        [Authorize]
+        [HttpPost]
+        [Route("AddBanner")]
+        public dynamic AddBanner([FromForm] IFormFile formFile, [FromForm] int id)
+        {
+            bool success = true;
+            string message = "El banner fue agregado con exito";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return token;
+
+            User user = token.result;
+
+            try
+            {
+                Event _event = _context.Events.FirstOrDefault(x => x.Id == id);
+                if (formFile == null)
+                {
+                    throw new Exception("Debe enviar una imagen valida");
+                }
+                if (_event == null)
+                {
+                    throw new Exception("Debe enviar un id de evento valido");
+                }
+                if (user != _event.CreatedByNavigation)
+                {
+                    throw new Exception("Solo el organizador de un evento puedo modificar el banner");
+                }
+
+                if (formFile != null && _event != null)
+                {
+                    EventBanner _eventBanner = _context.EventBanners.FirstOrDefault(x => x.EventId == _event.Id);
+                    if (_eventBanner != null)
+                    {
+                        _context.EventBanners.Remove(_eventBanner);
+                    }
+                    using (MemoryStream stream = new MemoryStream())
+                    {
+                        formFile.CopyTo(stream);
+                        _eventBanner = new EventBanner()
+                        {
+                            EventId = _event.Id,
+                            EventNavigation = _event,
+                            EventImage = stream.ToArray()
+                        };
+
+                        _context.EventBanners.Add(_eventBanner);
+                        _context.SaveChanges();
+                    }
+                    _event.Banner = _eventBanner;
+                    _context.SaveChanges();
+                }
+            }
+            catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+            return new
+            {
+                success = success,
+                message = message,
+            };
+        }
+
+        [Authorize]
+        [HttpDelete]
+        [Route("RemoveBanner")]
+        public dynamic RemoveBanner(Event evnt)
+        {
+            bool success = true;
+            string message = "El banner fue eliminado con exito";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return token;
+
+            User user = token.result;
+
+            try
+            {
+                Event _event = _context.Events.Include(x=>x.Banner).FirstOrDefault(x => x.Id == evnt.Id);
+                if (_event == null)
+                {
+                    throw new Exception("Debe enviar un id de evento valido");
+                }
+                if (_event.Banner == null)
+                {
+                    throw new Exception("El evento enviado no cuenta con un banner");
+                }
+                EventBanner eventBanner = _event.Banner;
+                if (eventBanner == null)
+                {
+                    throw new Exception("El evento enviado no cuenta con un banner");
+                }
+                if (user != _event.CreatedByNavigation)
+                {
+                    throw new Exception("El banner del evento solo puede ser eliminado por su organizador");
+                }
+                _context.EventBanners.Remove(eventBanner);
+                _context.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+            return new
+            {
+                success = success,
+                message = message,
+            };
+        }
+
+        [HttpGet]
+        [Route("GetBanner")]
+        public dynamic GetBanner(Event evnt)
+        {
+            bool success = true;
+            string message = "Imagen recuperada con exito";
+            string data = "";
+
+            try
+            {
+                Event _event = _context.Events.FirstOrDefault(x => x.Id == evnt.Id);
+                if (_event == null || evnt.Id == null)
+                {
+                    throw new Exception("Debe enviar un id de evento valido");
+                }
+                EventBanner image = _context.EventBanners.FirstOrDefault(x => x.EventId == evnt.Id);
+                if (image == null)
+                {
+                    throw new Exception("El evento que envio no tiene un banner cargado");
+                }
+                data = Convert.ToBase64String(image.EventImage);
+            }
+            catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+            return new
+            {
+                success = success,
+                message = message,
+                data = data
+            };
+        }
+
+        [Authorize]
+        [HttpPatch]
+        [Route("AddCategory")]
+        public dynamic AddCategory(EventCategoryModel evnt) 
+        {
+            bool success = true;
+            string message = "La categoria fue agregada al evento con exito";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return token;
+
+            User user = token.result;
+
+            try
+            {
+                Event _evnt = _context.Events.Include(x => x.Categories).FirstOrDefault(x => x.Id == evnt.Id);
+                if (_evnt == null)
+                {
+                    throw new Exception("Debe enviar un id de evento valido");
+                }
+                if (user != _evnt.CreatedByNavigation)
+                {
+                    throw new Exception("Solo el organizador puede modificar las categorias de un evento");
+                }
+
+                Category _cat = _context.Categories.FirstOrDefault(x => x.Name == evnt.Category);
+                if (_cat == null)
+                {
+                    throw new Exception("La categoria que desea agregar no existe");
+                }
+                if (_evnt.Categories.Contains(_cat))
+                {
+                    throw new Exception("Este evento ya contiene la categoria "+evnt.Category);
+                }
+                _evnt.Categories.Add(_cat);
+                _cat.Events.Add(_evnt);
+                _context.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+            return new
+            {
+                success = success,
+                message = message,
+            };
+        }
+
+        [Authorize]
+        [HttpPatch]
+        [Route("RemoveCategory")]
+        public dynamic RemoveCategory(EventCategoryModel evnt)
+        {
+            bool success = true;
+            string message = "La categoria fue quitada del evento con exito";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return token;
+
+            User user = token.result;
+
+            try
+            {
+                Event _evnt = _context.Events.Include(x => x.Categories).FirstOrDefault(x => x.Id == evnt.Id);
+                if (_evnt == null)
+                {
+                    throw new Exception("Debe enviar un id de evento valido");
+                }
+                if (user != _evnt.CreatedByNavigation)
+                {
+                    throw new Exception("Solo el organizador puede modificar las categorias de un evento");
+                }
+                Category _cat = _context.Categories.FirstOrDefault(x => x.Name == evnt.Category);
+                if (_cat == null)
+                {
+                    throw new Exception("La categoria que desea eliminar del evento no existe");
+                }
+                if (!_evnt.Categories.Contains(_cat))
+                {
+                    throw new Exception("El evento no contiene la categoria que desea eliminar");
+                }
+                _evnt.Categories.Remove(_cat);
+                _cat.Events.Remove(_evnt);
+                _context.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+            return new
+            {
+                success = success,
+                message = message,
+            };
+        }
+
     }
 
 }

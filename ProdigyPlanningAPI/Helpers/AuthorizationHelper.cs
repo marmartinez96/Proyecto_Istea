@@ -1,4 +1,6 @@
-﻿using ProdigyPlanningAPI.Data;
+﻿using Azure;
+using NuGet.Common;
+using ProdigyPlanningAPI.Data;
 using ProdigyPlanningAPI.Models;
 using System.Security.Claims;
 
@@ -10,6 +12,10 @@ namespace ProdigyPlanningAPI.Helpers
         {
             try
             {
+                if(identity.Claims.FirstOrDefault(a => a.Type == "id") == null)
+                {
+                    throw new Exception("Verifique estar usando el token correcto");
+                }
                 var id = identity.Claims.FirstOrDefault(a => a.Type == "id").Value;
 
                 User user = _context.Users.FirstOrDefault(a => a.Id.ToString() == id);
