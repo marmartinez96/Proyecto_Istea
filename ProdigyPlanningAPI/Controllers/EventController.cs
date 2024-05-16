@@ -158,16 +158,18 @@ namespace ProdigyPlanningAPI.Controllers
                 if(changeEventModel.NewDescription != null && changeEventModel.NewDescription != _event.Description) { _event.Description = changeEventModel.NewDescription;}
                 if(changeEventModel.NewDate != null && changeEventModel.NewDate != _event.Date) { _event.Date = changeEventModel.NewDate;}
                 if(changeEventModel.NewLocation != null && changeEventModel.NewLocation != _event.Location) { _event.Location = changeEventModel.NewLocation;}
-
-                Category _cat = _context.Categories.FirstOrDefault(x => x.Name.ToLower() == changeEventModel.NewCategory.ToLower());
-                if (_cat == null)
+                if (changeEventModel.NewCategory != null)
                 {
-                    throw new Exception("No se encontro la categoria " + changeEventModel.NewCategory);
-                }
-                if (!_event.Categories.Contains(_cat))
-                {
-                    _event.Categories.Add(_cat);
-                    _cat.Events.Add(_event);
+                    Category _cat = _context.Categories.FirstOrDefault(x => x.Name.ToLower() == changeEventModel.NewCategory.ToLower());
+                    if (_cat == null)
+                    {
+                        throw new Exception("No se encontro la categoria " + changeEventModel.NewCategory);
+                    }
+                    if (!_event.Categories.Contains(_cat))
+                    {
+                        _event.Categories.Add(_cat);
+                        _cat.Events.Add(_event);
+                    }
                 }
                 _context.SaveChanges();
                 message = "Se ha actualizado el evento "+ _event.Name;
