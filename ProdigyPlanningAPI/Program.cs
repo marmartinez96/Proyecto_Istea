@@ -25,10 +25,10 @@ builder.Services.AddControllers();
 
 var connectionString = builder.Configuration.GetConnectionString("conn_string_events");
 builder.Services.AddDbContext<ProdigyPlanningContext>(x => x.UseSqlServer(connectionString));
-builder.Services.AddControllers().AddNewtonsoftJson(x => { x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore; });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddControllers().AddNewtonsoftJson(x => { x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore; });
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

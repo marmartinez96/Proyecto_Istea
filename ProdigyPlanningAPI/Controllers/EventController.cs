@@ -8,6 +8,7 @@ using ProdigyPlanningAPI.Data;
 using ProdigyPlanningAPI.FormModels;
 using ProdigyPlanningAPI.Helpers;
 using ProdigyPlanningAPI.Models;
+using System.Diagnostics.Tracing;
 using System.Security.Claims;
 
 namespace ProdigyPlanningAPI.Controllers
@@ -29,10 +30,51 @@ namespace ProdigyPlanningAPI.Controllers
         {
             bool success = true;
             string message = "Success";
-            List<Event> result = null;
+            List<EventRetrievalModel> result = new List<EventRetrievalModel>();
             try
             {
-                result = _context.Events.ToList();
+                List<Event> _result = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).ToList();
+                foreach (Event e in _result)
+                {
+                    EventRetrievalModel eventResult = CreateRetrievalModel(_context, e);
+                    result.Add(eventResult);
+                }
+            }
+            catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+
+            return new
+            {
+                success = success,
+                message = message,
+                result = result
+            };
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("GetById")]
+        public dynamic GetEventById(Event evnt)
+        {
+            bool success = true;
+            string message = "Success";
+            EventRetrievalModel result = null;
+            try
+            {
+                if(evnt.Id == null || evnt.Id <= 0)
+                {
+                    throw new Exception("Debe enviar un numero id valido");
+                }
+                Event _event = _context.Events.Include(x => x.Banner).Include(x => x.CreatedByNavigation).Include(x=> x.Categories).FirstOrDefault(x => x.Id == evnt.Id);
+                if (_event == null)
+                {
+                    throw new Exception("No se encontro ese evento en la base de datos");
+                }
+                result = CreateRetrievalModel(_context, _event);
+                
             }
             catch (Exception e)
             {
@@ -358,12 +400,12 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
-                Event _event = _context.Events.FirstOrDefault(x => x.Id == evnt.Id);
+                Event _event = _context.Events.Include(x=> x.Banner).FirstOrDefault(x => x.Id == evnt.Id);
                 if (_event == null || evnt.Id == null)
                 {
                     throw new Exception("Debe enviar un id de evento valido");
                 }
-                EventBanner image = _context.EventBanners.FirstOrDefault(x => x.EventId == evnt.Id);
+                EventBanner image = _event.Banner;
                 if (image == null)
                 {
                     throw new Exception("El evento que envio no tiene un banner cargado");
@@ -480,6 +522,26 @@ namespace ProdigyPlanningAPI.Controllers
                 success = success,
                 message = message,
             };
+        }
+
+        private EventRetrievalModel CreateRetrievalModel(DbContext context, Event e)
+        {
+            EventRetrievalModel eventResult = new EventRetrievalModel();
+            eventResult.Id = e.Id;
+            eventResult.Name = e.Name;
+            eventResult.Date = e.Date;
+            eventResult.Location = e.Location;
+            eventResult.Description = e.Description;
+            eventResult.CreatedBy = e.CreatedByNavigation.Name + ' ' + e.CreatedByNavigation.Surname;
+            foreach (Category c in e.Categories)
+            {
+                eventResult.Categories.Add(c.Name);
+            }
+            if (e.Banner != null)
+            {
+                eventResult.HasBanner = true;
+            }
+            return eventResult;
         }
 
     }
