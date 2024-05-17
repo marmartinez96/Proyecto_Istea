@@ -25,6 +25,9 @@ public partial class Event
     [Column("date", TypeName = "datetime")]
     public DateTime? Date { get; set; }
 
+    [Column("duration")]
+    public int? Duration { get; set; }
+
     [Column("location")]
     [StringLength(50)]
     public string? Location { get; set; }

@@ -137,6 +137,7 @@ namespace ProdigyPlanningAPI.Controllers
                 _event.Description = evnt.Description;
                 _event.CreatedBy= user.Id;
                 _event.CreatedByNavigation = user;
+                _event.Duration = evnt.Duration;
                 user.Events.Add(_event);
 
                 Category _cat = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Name.ToLower() == evnt.Category.ToLower());
@@ -200,7 +201,8 @@ namespace ProdigyPlanningAPI.Controllers
                 if(changeEventModel.NewDescription != null && changeEventModel.NewDescription != _event.Description) { _event.Description = changeEventModel.NewDescription;}
                 if(changeEventModel.NewDate != null && changeEventModel.NewDate != _event.Date) { _event.Date = changeEventModel.NewDate;}
                 if(changeEventModel.NewLocation != null && changeEventModel.NewLocation != _event.Location) { _event.Location = changeEventModel.NewLocation;}
-                if (changeEventModel.NewCategory != null)
+                if(changeEventModel.NewDuration != null && changeEventModel.NewDuration != _event.Duration) { _event.Duration = changeEventModel.NewDuration;}
+                if(changeEventModel.NewCategory != null)
                 {
                     Category _cat = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Name.ToLower() == changeEventModel.NewCategory.ToLower());
                     if (_cat == null)
@@ -535,6 +537,7 @@ namespace ProdigyPlanningAPI.Controllers
             eventResult.Location = e.Location;
             eventResult.Description = e.Description;
             eventResult.CreatedBy = e.CreatedByNavigation.Name + ' ' + e.CreatedByNavigation.Surname;
+            eventResult.Duration = e.Duration;
             foreach (Category c in e.Categories)
             {
                 eventResult.Categories.Add(c.Name);

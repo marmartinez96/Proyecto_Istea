@@ -6,6 +6,7 @@
         public string Name { get; set; }
         public DateTime? Date { get; set; }
         public string Location { get; set; }
+        public int? Duration { get; set; }
         public string Description { get; set; }
         public string CreatedBy { get; set; }
         public List<string> Categories { get; set; } = new List<string>();

@@ -8,5 +8,6 @@
         public DateTime? NewDate { get; set; }
         public string NewLocation { get; set; }
         public string NewCategory { get; set; }
+        public int NewDuration { get; set; }
     }
 }
