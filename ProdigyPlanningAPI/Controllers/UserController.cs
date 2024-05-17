@@ -165,5 +165,41 @@ namespace ProdigyPlanningAPI.Controllers
                 message = message,
             };
         }
+
+        [Authorize]
+        [HttpGet]
+        [Route("GetOwnedEvents")]
+        public dynamic GetOwnedEvents()
+        {
+            bool success = true;
+            string message = "success";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return token;
+
+            User _user = token.result;
+
+            List<EventRetrievalModel> result = new List<EventRetrievalModel>();
+            try
+            {
+                List<Event> _events = _context.Events.Include(x=> x.CreatedByNavigation).Include(x=> x.Categories).Where(x=> x.IsDeleted == false && x.CreatedByNavigation == _user).ToList();
+                foreach (Event e in _events)
+                {
+                    EventRetrievalModel _event = EventRetrievalHelper.CreateRetrievalModel(_context, e);
+                    result.Add(_event);
+                }
+            }
+            catch(Exception e)
+            {
+                success = false;
+                message = e.Message; 
+            }
+            return new
+            {
+                success = success,
+                message = message,
+                data = result,
+            };
+        }
     }
 }

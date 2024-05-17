@@ -47,6 +47,46 @@ namespace ProdigyPlanningAPI.Controllers
             };
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("GetEvents")]
+        public dynamic GetEventsByCategory(Category category)
+        {
+            bool success = true;
+            string message = "success";
+
+            List<EventRetrievalModel> result = new List<EventRetrievalModel>();
+            try
+            {
+                if(category.Id == null || category.Id <= 0)
+                {
+                    throw new Exception("Debe ingresar un id de categoria valido");
+                }
+                Category _category = _context.Categories.Where(x=> x.IsDeleted == false).FirstOrDefault(c => c.Id == category.Id);
+                if (_category == null)
+                {
+                    throw new Exception("La categoria queesta buscando no existe");
+                }
+                List<Event> _events = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Where(x => x.IsDeleted == false && x.Categories.Contains(_category)).ToList();
+                foreach (Event e in _events)
+                {
+                    EventRetrievalModel _event = EventRetrievalHelper.CreateRetrievalModel(_context, e);
+                    result.Add(_event);
+                }
+            }
+            catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+            return new
+            {
+                success = success,
+                message = message,
+                data = result,
+            };
+        }
+
         [Authorize]
         [HttpPost]
         [Route("Add")]
