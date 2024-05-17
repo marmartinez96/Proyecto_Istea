@@ -28,7 +28,7 @@ namespace ProdigyPlanningAPI.Controllers
             User _user = null;
             try
             {
-                _user = _context.Users.FirstOrDefault(a => a.Email == user.Email);
+                _user = _context.Users.Where(x=> x.IsDeleted == false).FirstOrDefault(a => a.Email == user.Email);
                 if(_user != null && !BC.EnhancedVerify(user.Password, _user.Password))
                 {
                     _user = null;

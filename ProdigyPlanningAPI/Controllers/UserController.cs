@@ -150,7 +150,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
-                _context.Remove(_user);
+                _user.IsDeleted = true;
                 _context.SaveChanges();
             }
             catch(Exception e)
