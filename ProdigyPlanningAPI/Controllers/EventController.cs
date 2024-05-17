@@ -36,7 +36,7 @@ namespace ProdigyPlanningAPI.Controllers
                 List<Event> _result = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Where(x=> x.IsDeleted == false).ToList();
                 foreach (Event e in _result)
                 {
-                    EventRetrievalModel eventResult = CreateRetrievalModel(_context, e);
+                    EventRetrievalModel eventResult = EventRetrievalHelper.CreateRetrievalModel(_context, e);
                     result.Add(eventResult);
                 }
             }
@@ -73,7 +73,7 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("No se encontro ese evento en la base de datos");
                 }
-                result = CreateRetrievalModel(_context, _event);
+                result = EventRetrievalHelper.CreateRetrievalModel(_context, _event);
                 
             }
             catch (Exception e)
@@ -526,27 +526,6 @@ namespace ProdigyPlanningAPI.Controllers
                 success = success,
                 message = message,
             };
-        }
-
-        private EventRetrievalModel CreateRetrievalModel(DbContext context, Event e)
-        {
-            EventRetrievalModel eventResult = new EventRetrievalModel();
-            eventResult.Id = e.Id;
-            eventResult.Name = e.Name;
-            eventResult.Date = e.Date;
-            eventResult.Location = e.Location;
-            eventResult.Description = e.Description;
-            eventResult.CreatedBy = e.CreatedByNavigation.Name + ' ' + e.CreatedByNavigation.Surname;
-            eventResult.Duration = e.Duration;
-            foreach (Category c in e.Categories)
-            {
-                eventResult.Categories.Add(c.Name);
-            }
-            if (e.Banner != null)
-            {
-                eventResult.HasBanner = true;
-            }
-            return eventResult;
         }
 
     }
