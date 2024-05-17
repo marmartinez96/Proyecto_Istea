@@ -376,6 +376,7 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("El banner del evento solo puede ser eliminado por su organizador");
                 }
+                _event.Banner = null;
                 _context.EventBanners.Remove(eventBanner);
                 _context.SaveChanges();
             }

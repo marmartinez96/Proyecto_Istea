@@ -75,14 +75,22 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("No se puede crear una categoria con un nombre en blanco");
                 }
-                if(_context.Categories.FirstOrDefault(c => c.Name == category.Name) != null)
-                {
-                    throw new Exception("Ya existe una categoria con ese nombre");
-                }
 
-                Category _category = new Category();
-                _category.Name = category.Name;
-                _context.Categories.Add(_category);
+                Category _category = _context.Categories.FirstOrDefault(c => c.Name == category.Name);
+                if(_category != null)
+                {
+                    if(category.IsDeleted == true)
+                    {
+                        throw new Exception("Ya existe una categoria con ese nombre");
+                    }
+                    _category.IsDeleted = false;
+                }
+                else
+                {
+                    _category = new Category();
+                    _category.Name = category.Name;
+                    _context.Categories.Add(_category);
+                }
                 _context.SaveChanges();
                 message = "Se ha creado la categoria " + _category.Name;
             }
@@ -90,7 +98,6 @@ namespace ProdigyPlanningAPI.Controllers
             {
                 success= false;
                 message = e.Message;
-
             }
 
             return new
