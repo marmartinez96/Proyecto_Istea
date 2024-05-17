@@ -33,7 +33,7 @@ namespace ProdigyPlanningAPI.Controllers
             List<EventRetrievalModel> result = new List<EventRetrievalModel>();
             try
             {
-                List<Event> _result = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).ToList();
+                List<Event> _result = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Where(x=> x.IsDeleted == false).ToList();
                 foreach (Event e in _result)
                 {
                     EventRetrievalModel eventResult = CreateRetrievalModel(_context, e);
@@ -68,7 +68,7 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("Debe enviar un numero id valido");
                 }
-                Event _event = _context.Events.Include(x => x.Banner).Include(x => x.CreatedByNavigation).Include(x=> x.Categories).FirstOrDefault(x => x.Id == evnt.Id);
+                Event _event = _context.Events.Include(x => x.Banner).Include(x => x.CreatedByNavigation).Include(x=> x.Categories).Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Id == evnt.Id);
                 if (_event == null)
                 {
                     throw new Exception("No se encontro ese evento en la base de datos");
@@ -139,7 +139,7 @@ namespace ProdigyPlanningAPI.Controllers
                 _event.CreatedByNavigation = user;
                 user.Events.Add(_event);
 
-                Category _cat = _context.Categories.FirstOrDefault(x => x.Name.ToLower() == evnt.Category.ToLower());
+                Category _cat = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Name.ToLower() == evnt.Category.ToLower());
                 if(_cat == null )
                 {
                     throw new Exception("No se encontro la categoria "+evnt.Category);
@@ -187,7 +187,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
-                Event _event = _context.Events.FirstOrDefault(c => c.Id == changeEventModel.Id);
+                Event _event = _context.Events.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Id == changeEventModel.Id);
                 if (_event == null)
                 {
                     throw new Exception("El evento que desea modificar no existe");
@@ -202,7 +202,7 @@ namespace ProdigyPlanningAPI.Controllers
                 if(changeEventModel.NewLocation != null && changeEventModel.NewLocation != _event.Location) { _event.Location = changeEventModel.NewLocation;}
                 if (changeEventModel.NewCategory != null)
                 {
-                    Category _cat = _context.Categories.FirstOrDefault(x => x.Name.ToLower() == changeEventModel.NewCategory.ToLower());
+                    Category _cat = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Name.ToLower() == changeEventModel.NewCategory.ToLower());
                     if (_cat == null)
                     {
                         throw new Exception("No se encontro la categoria " + changeEventModel.NewCategory);
@@ -252,7 +252,7 @@ namespace ProdigyPlanningAPI.Controllers
             }
             try
             {
-                Event _event = _context.Events.FirstOrDefault(c => c.Name == evnt.Name);
+                Event _event = _context.Events.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Name == evnt.Name);
                 if (_event == null)
                 {
                     throw new Exception("El evento que desea eliminar no existe");
@@ -261,7 +261,8 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("El evento solo puede ser eliminado por su creador");
                 }
-                _context.Events.Remove(_event);
+                
+                _event.IsDeleted = true;
                 _context.SaveChanges();
                 message = "Se ha eliminado el evento " + evnt.Name;
             }
@@ -292,7 +293,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
-                Event _event = _context.Events.FirstOrDefault(x => x.Id == id);
+                Event _event = _context.Events.Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Id == id);
                 if (formFile == null)
                 {
                     throw new Exception("Debe enviar una imagen valida");
@@ -357,7 +358,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
-                Event _event = _context.Events.Include(x=>x.Banner).FirstOrDefault(x => x.Id == evnt.Id);
+                Event _event = _context.Events.Include(x=>x.Banner).Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Id == evnt.Id);
                 if (_event == null)
                 {
                     throw new Exception("Debe enviar un id de evento valido");
@@ -400,7 +401,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
-                Event _event = _context.Events.Include(x=> x.Banner).FirstOrDefault(x => x.Id == evnt.Id);
+                Event _event = _context.Events.Include(x=> x.Banner).Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Id == evnt.Id);
                 if (_event == null || evnt.Id == null)
                 {
                     throw new Exception("Debe enviar un id de evento valido");
@@ -440,7 +441,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
-                Event _evnt = _context.Events.Include(x => x.Categories).FirstOrDefault(x => x.Id == evnt.Id);
+                Event _evnt = _context.Events.Include(x => x.Categories).Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Id == evnt.Id);
                 if (_evnt == null)
                 {
                     throw new Exception("Debe enviar un id de evento valido");
@@ -450,7 +451,7 @@ namespace ProdigyPlanningAPI.Controllers
                     throw new Exception("Solo el organizador puede modificar las categorias de un evento");
                 }
 
-                Category _cat = _context.Categories.FirstOrDefault(x => x.Name == evnt.Category);
+                Category _cat = _context.Categories.Where(x=> x.IsDeleted == false).FirstOrDefault(x => x.Name == evnt.Category);
                 if (_cat == null)
                 {
                     throw new Exception("La categoria que desea agregar no existe");
@@ -490,7 +491,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
-                Event _evnt = _context.Events.Include(x => x.Categories).FirstOrDefault(x => x.Id == evnt.Id);
+                Event _evnt = _context.Events.Include(x => x.Categories).Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Id == evnt.Id);
                 if (_evnt == null)
                 {
                     throw new Exception("Debe enviar un id de evento valido");
@@ -499,7 +500,7 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("Solo el organizador puede modificar las categorias de un evento");
                 }
-                Category _cat = _context.Categories.FirstOrDefault(x => x.Name == evnt.Category);
+                Category _cat = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Name == evnt.Category);
                 if (_cat == null)
                 {
                     throw new Exception("La categoria que desea eliminar del evento no existe");

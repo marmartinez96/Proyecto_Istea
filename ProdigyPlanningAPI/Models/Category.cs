@@ -17,6 +17,9 @@ public partial class Category
     [StringLength(50)]
     public string? Name { get; set; }
 
+    [Column("is_deleted")]
+    public bool IsDeleted { get; set; } = false;
+
     [ForeignKey("CategoryId")]
     [InverseProperty("Categories")]
     public virtual ICollection<Event> Events { get; set; } = new List<Event>();

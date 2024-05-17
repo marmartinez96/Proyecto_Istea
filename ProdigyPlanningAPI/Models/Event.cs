@@ -36,6 +36,9 @@ public partial class Event
     [Column("created_by")]
     public int? CreatedBy { get; set; }
 
+    [Column("is_deleted")]
+    public bool IsDeleted { get; set; } = false;
+
     [ForeignKey("CreatedBy")]
     [InverseProperty("Events")]
     public virtual User? CreatedByNavigation { get; set; }

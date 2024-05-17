@@ -31,7 +31,7 @@ namespace ProdigyPlanningAPI.Controllers
             List<Category> result = null;
             try
             {
-                result = _context.Categories.ToList();
+                result = _context.Categories.Where(x=> x.IsDeleted == false).ToList();
             }
             catch (Exception e)
             {
@@ -124,7 +124,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
-                Category _category = _context.Categories.FirstOrDefault(c => c.Name == changeCategoryModel.OldName);
+                Category _category = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Name == changeCategoryModel.OldName);
                 if (_category == null) 
                 {
                     throw new Exception("La categoria que desea modificar no existe");
@@ -133,7 +133,7 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("El nuevo nombre coincide con el anterior");
                 }
-                if (_context.Categories.FirstOrDefault(c => c.Name == changeCategoryModel.NewName) != null)
+                if (_context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Name == changeCategoryModel.NewName) != null)
                 {
                     throw new Exception("Ya existe una categoria con ese nombre");
                 }
@@ -176,12 +176,12 @@ namespace ProdigyPlanningAPI.Controllers
             }
             try
             {
-                Category _category = _context.Categories.FirstOrDefault(c => c.Name == category.Name);
+                Category _category = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Name == category.Name);
                 if (_category == null)
                 {
                     throw new Exception("La categoria que desea eliminar no existe");
                 }
-                _context.Categories.Remove(_category);
+                _category.IsDeleted= true;
                 _context.SaveChanges();
                 message = "Se ha eliminado la categoria " + category.Name;
             }
