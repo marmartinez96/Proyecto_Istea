@@ -18,7 +18,7 @@ namespace ProdigyPlanningAPI.Helpers
                 }
                 var id = identity.Claims.FirstOrDefault(a => a.Type == "id").Value;
 
-                User user = _context.Users.FirstOrDefault(a => a.Id.ToString() == id);
+                User user = _context.Users.Where(x => x.IsDeleted == false).FirstOrDefault(a => a.Id.ToString() == id);
 
                 if(user == null)
                 {

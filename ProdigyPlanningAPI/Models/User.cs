@@ -33,6 +33,9 @@ public partial class User
     [StringLength(255)]
     public string? Roles { get; set; }
 
+    [Column("is_deleted")]
+    public bool IsDeleted { get; set; } = false;
+
     [InverseProperty("CreatedByNavigation")]
     public virtual ICollection<Event> Events { get; set; } = new List<Event>();
 }

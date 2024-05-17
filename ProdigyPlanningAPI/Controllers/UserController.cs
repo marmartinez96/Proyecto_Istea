@@ -101,7 +101,7 @@ namespace ProdigyPlanningAPI.Controllers
         
             try
             {
-                var emailValidation = _context.Users.FirstOrDefault(a => a.Email == user.Email);
+                var emailValidation = _context.Users.Where(x => x.IsDeleted == false).FirstOrDefault(a => a.Email == user.Email);
 
                 if (emailValidation != null && emailValidation != _user)
                 {
