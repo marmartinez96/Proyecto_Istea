@@ -8,6 +8,7 @@ using ProdigyPlanningAPI.Data;
 using ProdigyPlanningAPI.FormModels;
 using ProdigyPlanningAPI.Helpers;
 using ProdigyPlanningAPI.Models;
+using System.Data;
 using System.Diagnostics.Tracing;
 using System.Security.Claims;
 
@@ -33,7 +34,7 @@ namespace ProdigyPlanningAPI.Controllers
             List<EventRetrievalModel> result = new List<EventRetrievalModel>();
             try
             {
-                List<Event> _result = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Where(x=> x.IsDeleted == false).ToList();
+                List<Event> _result = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Where(x=> x.IsDeleted == false).OrderBy(x=> x.Date).ToList();
                 foreach (Event e in _result)
                 {
                     EventRetrievalModel eventResult = EventRetrievalHelper.CreateRetrievalModel(_context, e);
@@ -82,6 +83,55 @@ namespace ProdigyPlanningAPI.Controllers
                 message = e.Message;
             }
 
+            return new
+            {
+                success = success,
+                message = message,
+                result = result
+            };
+        }
+
+        ///
+        ///Estoy seguro que aca faltan un monton de validaciones
+        ///
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("GetByPeriod")]
+        public dynamic GetEventByPeriod(PeriodModel? model)
+        {
+            bool success = true;
+            string message = "Success";
+            string cdPeriod;
+            List<EventRetrievalModel> result = new List<EventRetrievalModel>();
+            try
+            {
+                if (model == null || model.cd == null || model.cd.Trim() == "" || model.cd.Count() > 6)
+                {
+                    model = new PeriodModel();
+                }
+                cdPeriod = model.cd.Trim();
+
+                DateTime? firstDayPeriod = cdPeriodToDateTime(cdPeriod);
+                DateTime? lastDayPeriod = cdPeriodToDateTime(cdPeriod).AddMonths(1).AddTicks(-1);
+
+                List<Event> _events = _context.Events.Include(x => x.Banner).
+                    Include(x => x.CreatedByNavigation).
+                    Include(x => x.Categories).
+                    Where(x => x.IsDeleted == false).
+                    Where(x => x.Date >= firstDayPeriod).
+                    Where(x=> x.Date <= lastDayPeriod).
+                    ToList();
+
+                foreach (Event e in _events)
+                {
+                    result.Add(EventRetrievalHelper.CreateRetrievalModel(_context, e));
+                }
+            }
+            catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
             return new
             {
                 success = success,
@@ -526,6 +576,24 @@ namespace ProdigyPlanningAPI.Controllers
                 success = success,
                 message = message,
             };
+        }
+
+        private DateTime cdPeriodToDateTime(string cdPeriod)
+        {
+            DateTime result = DateTime.MinValue;
+            try
+            {
+                int month;
+                int year;
+                int.TryParse(cdPeriod.Substring(0, 2), out month);
+                int.TryParse(cdPeriod.Substring(2), out year);
+                result = new DateTime(year, month, 1);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Hubo un error tratando de convertir el periodo");
+            }
+            return result;
         }
 
     }
