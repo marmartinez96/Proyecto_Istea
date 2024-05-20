@@ -227,7 +227,7 @@ namespace ProdigyPlanningAPI.Controllers
         [Authorize]
         [HttpPatch]
         [Route("SetPremium")]
-        public dynamic SetPrmium()
+        public dynamic SetPremium()
         {
             bool success = true;
             string message = "success";
@@ -239,14 +239,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
-                if (_user.IsPremium)
-                {
-                    _user.IsPremium = false;
-                }
-                else
-                {
-                    _user.IsPremium = true;
-                }
+                _user.IsPremium = !_user.IsPremium;
                 _context.SaveChanges();
             }
             catch (Exception e)
