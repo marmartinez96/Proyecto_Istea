@@ -27,6 +27,7 @@ namespace ProdigyPlanningAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet]
+        [Route("GetAll")]
         public dynamic GetEvents()
         {
             bool success = true;
@@ -101,7 +102,7 @@ namespace ProdigyPlanningAPI.Controllers
             List<EventRetrievalModel> result = new List<EventRetrievalModel>();
             try
             {
-                IQueryable<Event> query = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Include(x=> x.Banner);
+                IQueryable<Event> query = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Include(x=> x.Banner).Where(x=> x.IsDeleted == false);
                 if (filter.Name != null)
                 {
                     query = query.Where(x=> x.IsDeleted == false).Where(x => x.Name == filter.Name);
@@ -211,6 +212,14 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     success = false,
                     message = "Necesita permisos de organizador para utilizar este recurso",
+                };
+            }
+            if (user.IsPremium == false && _context.Events.Include(x=> x.CreatedByNavigation).Where(x=> x.IsDeleted == false).ToList().Count() > 2)
+            {
+                return new
+                {
+                    success = true,
+                    message = "El limite de eventos activos al mismo tiempo para un usuario gratuito es de tres",
                 };
             }
             try

@@ -33,6 +33,9 @@ public partial class User
     [StringLength(255)]
     public string? Roles { get; set; }
 
+    [Column("is_premium")]
+    public bool IsPremium { get; set; } = false;
+
     [Column("is_deleted")]
     public bool IsDeleted { get; set; } = false;
 
