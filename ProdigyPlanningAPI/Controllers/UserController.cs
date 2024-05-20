@@ -219,7 +219,46 @@ namespace ProdigyPlanningAPI.Controllers
             {
                 success = success,
                 message = message,
+                count = result.Count(),
                 data = result,
+            };
+        }
+
+        [Authorize]
+        [HttpPatch]
+        [Route("SetPremium")]
+        public dynamic SetPrmium()
+        {
+            bool success = true;
+            string message = "success";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return token;
+
+            User _user = token.result;
+
+            try
+            {
+                if (_user.IsPremium)
+                {
+                    _user.IsPremium = false;
+                }
+                else
+                {
+                    _user.IsPremium = true;
+                }
+                _context.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+            return new
+            {
+                success = success,
+                message = message,
+                data = _user,
             };
         }
     }
