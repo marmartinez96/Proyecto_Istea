@@ -94,17 +94,53 @@ namespace ProdigyPlanningAPI.Controllers
         [AllowAnonymous]
         [HttpGet]
         [Route("GetByFilters")]
-        public dynamic GetByfilter()
+        public dynamic GetByfilter(FilterEventModel filter)
         {
-            DateTime? date = new DateTime(2024, 5, 5);
+            bool success = true;
+            string message = "Success";
+            List<EventRetrievalModel> result = new List<EventRetrievalModel>();
+            try
+            {
+                IQueryable<Event> query = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Include(x=> x.Banner);
+                if (filter.Name != null)
+                {
+                    query = query.Where(x=> x.IsDeleted == false).Where(x => x.Name == filter.Name);
+                }
+                if (filter.CategoryId != null)
+                {
+                    Category _cat = _context.Categories.FirstOrDefault(x => x.Id == filter.CategoryId);
+                    if (_cat == null)
+                    {
+                        throw new Exception("La categoria que intenta buscar no existe");
+                    }
+                    query = query.Where(x => x.IsDeleted == false).Where(x => x.Categories.Contains(_cat));
+                }
+                if (filter.FromDate != DateOnly.MinValue)
+                {
+                    query = query.Where(x=> x.Date>= filter.FromDate);
+                }
+                if (filter.ToDate!= DateOnly.MaxValue) 
+                {
+                    query = query.Where(x=> x.Date<= filter.ToDate);
+                }
 
-            IQueryable<Event> query = _context.Events;
-            query = query.Where(x => x.Name == "Feria del libro");
-            //query = query.Where(x =>  x.Date == date);
-
-            var list = query.ToList();
-
-            return new NotImplementedException();
+                foreach (Event e in query.ToList())
+                {
+                    result.Add(EventRetrievalHelper.CreateRetrievalModel(_context, e));
+                }
+            }
+            catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+            return new
+            {
+                success = success,
+                message = message,
+                count = result.Count(),
+                result = result
+            };
         }
 
         ///
