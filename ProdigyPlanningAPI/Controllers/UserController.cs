@@ -44,6 +44,27 @@ namespace ProdigyPlanningAPI.Controllers
         }
 
         [Authorize]
+        [HttpGet]
+        [Route("IsPremium")]
+        public dynamic GetIsPremium()
+        {
+            bool success = true;
+            string message = "Success";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return token;
+
+            User user = token.result;
+
+            return new
+            {
+                success = success,
+                message = message,
+                data = user.IsPremium
+            };
+        }
+
+        [Authorize]
         [HttpPatch]
         [Route("UpdatePassword")]
         public dynamic UpdatePassword(ChangePasswordModel passwordModel)
