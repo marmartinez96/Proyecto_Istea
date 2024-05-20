@@ -15,7 +15,8 @@ namespace ProdigyPlanningAPI.Helpers
             EventRetrievalModel eventResult = new EventRetrievalModel();
             eventResult.Id = e.Id;
             eventResult.Name = e.Name;
-            eventResult.Date = e.Date;
+            eventResult.Date = e.Date.ToString();
+            eventResult.Time = e.Time.ToString();
             eventResult.Location = e.Location;
             eventResult.Description = e.Description;
             eventResult.CreatedBy = e.CreatedByNavigation.Name + ' ' + e.CreatedByNavigation.Surname;

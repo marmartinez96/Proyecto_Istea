@@ -91,6 +91,22 @@ namespace ProdigyPlanningAPI.Controllers
             };
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("GetByFilters")]
+        public dynamic GetByfilter()
+        {
+            DateTime? date = new DateTime(2024, 5, 5);
+
+            IQueryable<Event> query = _context.Events;
+            query = query.Where(x => x.Name == "Feria del libro");
+            //query = query.Where(x =>  x.Date == date);
+
+            var list = query.ToList();
+
+            return new NotImplementedException();
+        }
+
         ///
         ///Estoy seguro que aca faltan un monton de validaciones
         ///
@@ -111,8 +127,8 @@ namespace ProdigyPlanningAPI.Controllers
                 }
                 cdPeriod = model.cd.Trim();
 
-                DateTime? firstDayPeriod = cdPeriodToDateTime(cdPeriod);
-                DateTime? lastDayPeriod = cdPeriodToDateTime(cdPeriod).AddMonths(1).AddTicks(-1);
+                DateOnly? firstDayPeriod = cdPeriodToDateTime(cdPeriod);
+                DateOnly? lastDayPeriod = cdPeriodToDateTime(cdPeriod).AddMonths(1).AddDays(-1);
 
                 List<Event> _events = _context.Events.Include(x => x.Banner).
                     Include(x => x.CreatedByNavigation).
@@ -175,6 +191,10 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("El campo fecha no puede estar vacio");
                 }
+                if (evnt.Time == null)
+                {
+                    throw new Exception("El campo horario no puede estar vacio");
+                }
                 if (evnt.Category == null)
                 {
                     throw new Exception("El campo categoria no puede estar vacio");
@@ -184,6 +204,7 @@ namespace ProdigyPlanningAPI.Controllers
                 _event.Name = evnt.Name;
                 _event.Location = evnt.Location;
                 _event.Date= evnt.Date;
+                _event.Time= evnt.Time;
                 _event.Description = evnt.Description;
                 _event.CreatedBy= user.Id;
                 _event.CreatedByNavigation = user;
@@ -250,6 +271,7 @@ namespace ProdigyPlanningAPI.Controllers
                 if(changeEventModel.NewName != null && changeEventModel.NewName != _event.Name) { _event.Name = changeEventModel.NewName; }
                 if(changeEventModel.NewDescription != null && changeEventModel.NewDescription != _event.Description) { _event.Description = changeEventModel.NewDescription;}
                 if(changeEventModel.NewDate != null && changeEventModel.NewDate != _event.Date) { _event.Date = changeEventModel.NewDate;}
+                if(changeEventModel.NewTime != null && changeEventModel.NewTime != _event.Time) { _event.Time = changeEventModel.NewTime;}
                 if(changeEventModel.NewLocation != null && changeEventModel.NewLocation != _event.Location) { _event.Location = changeEventModel.NewLocation;}
                 if(changeEventModel.NewDuration != null && changeEventModel.NewDuration != _event.Duration) { _event.Duration = changeEventModel.NewDuration;}
                 if(changeEventModel.NewCategory != null)
@@ -578,16 +600,16 @@ namespace ProdigyPlanningAPI.Controllers
             };
         }
 
-        private DateTime cdPeriodToDateTime(string cdPeriod)
+        private DateOnly cdPeriodToDateTime(string cdPeriod)
         {
-            DateTime result = DateTime.MinValue;
+            DateOnly result = DateOnly.MinValue;
             try
             {
                 int month;
                 int year;
                 int.TryParse(cdPeriod.Substring(0, 2), out month);
                 int.TryParse(cdPeriod.Substring(2), out year);
-                result = new DateTime(year, month, 1);
+                result = new DateOnly(year, month, 1);
             }
             catch (Exception e)
             {

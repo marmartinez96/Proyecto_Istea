@@ -22,8 +22,11 @@ public partial class Event
     [StringLength(50)]
     public string? Name { get; set; }
 
-    [Column("date", TypeName = "datetime")]
-    public DateTime? Date { get; set; }
+    [Column("date", TypeName = "date")]
+    public DateOnly Date { get; set; }
+
+    [Column("time", TypeName = "time")]
+    public TimeOnly Time { get; set; }
 
     [Column("duration")]
     public int? Duration { get; set; }

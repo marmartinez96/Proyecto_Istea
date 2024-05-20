@@ -23,8 +23,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddControllers();
 
+
 var connectionString = builder.Configuration.GetConnectionString("conn_string_events");
-builder.Services.AddDbContext<ProdigyPlanningContext>(x => x.UseSqlServer(connectionString));
+builder.Services.AddDbContext<ProdigyPlanningContext>(x => x.UseSqlServer(connectionString, x=> x.UseDateOnlyTimeOnly()));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

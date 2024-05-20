@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProdigyPlanningAPI.Data;
 
@@ -11,9 +12,11 @@ using ProdigyPlanningAPI.Data;
 namespace ProdigyPlanningAPI.Migrations
 {
     [DbContext(typeof(ProdigyPlanningContext))]
-    partial class ProdigyPlanningContextModelSnapshot : ModelSnapshot
+    [Migration("20240520150406_DateTimeSplit")]
+    partial class DateTimeSplit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -61,7 +64,7 @@ namespace ProdigyPlanningAPI.Migrations
                     b.HasKey("Id")
                         .HasName("PK__categori__3213E83FC6E8B697");
 
-                    b.ToTable("categories", (string)null);
+                    b.ToTable("categories");
                 });
 
             modelBuilder.Entity("ProdigyPlanningAPI.Models.Event", b =>
@@ -113,7 +116,7 @@ namespace ProdigyPlanningAPI.Migrations
 
                     b.HasIndex("CreatedBy");
 
-                    b.ToTable("events", (string)null);
+                    b.ToTable("events");
                 });
 
             modelBuilder.Entity("ProdigyPlanningAPI.Models.EventBanner", b =>
@@ -132,7 +135,7 @@ namespace ProdigyPlanningAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("event_banners", (string)null);
+                    b.ToTable("event_banners");
                 });
 
             modelBuilder.Entity("ProdigyPlanningAPI.Models.User", b =>
@@ -176,7 +179,7 @@ namespace ProdigyPlanningAPI.Migrations
                     b.HasKey("Id")
                         .HasName("PK__users__3213E83F54C06594");
 
-                    b.ToTable("users", (string)null);
+                    b.ToTable("users");
                 });
 
             modelBuilder.Entity("CategoryEvent", b =>
