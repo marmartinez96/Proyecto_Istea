@@ -483,6 +483,7 @@ namespace ProdigyPlanningAPI.Controllers
                     throw new Exception("El evento solo puede ser eliminado por su creador");
                 }
                 _event.IsDeleted = true;
+                _event.IsFeatured = false;
                 _context.SaveChanges();
                 message = "Se ha eliminado el evento " + _event.Name;
             }
