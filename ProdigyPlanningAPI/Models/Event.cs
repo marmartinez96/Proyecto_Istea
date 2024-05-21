@@ -41,6 +41,8 @@ public partial class Event
 
     [Column("created_by")]
     public int? CreatedBy { get; set; }
+    [Column("created_at")]
+    public DateTime CreatedAt { get; set;} = DateTime.Now;
 
     [Column("is_deleted")]
     public bool IsDeleted { get; set; } = false;
