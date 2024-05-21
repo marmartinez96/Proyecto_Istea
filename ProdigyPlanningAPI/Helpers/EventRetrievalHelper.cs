@@ -13,22 +13,29 @@ namespace ProdigyPlanningAPI.Helpers
         public static EventRetrievalModel CreateRetrievalModel(DbContext context, Event e)
         {
             EventRetrievalModel eventResult = new EventRetrievalModel();
-            eventResult.Id = e.Id;
-            eventResult.Name = e.Name;
-            eventResult.Date = e.Date.ToString();
-            eventResult.Time = e.Time.ToString();
-            eventResult.Location = e.Location;
-            eventResult.Description = e.Description;
-            eventResult.CreatedBy = e.CreatedByNavigation.Name + ' ' + e.CreatedByNavigation.Surname;
-            eventResult.Duration = e.Duration;
-            foreach (Category c in e.Categories)
+            if (e != null)
             {
-                eventResult.Categories.Add(c.Name);
-            }
-            if (e.Banner != null)
-            {
-                eventResult.HasBanner = true;
-            }
+                eventResult.Id = e.Id;
+                eventResult.Name = e.Name;
+                eventResult.Date = e.Date.ToString();
+                eventResult.Time = e.Time.ToString();
+                eventResult.Location = e.Location;
+                eventResult.Description = e.Description;
+                if(e.CreatedByNavigation != null)
+                {
+                    eventResult.CreatedBy = e.CreatedByNavigation.Name + ' ' + e.CreatedByNavigation.Surname;
+                }
+                eventResult.Duration = e.Duration;
+                foreach (Category c in e.Categories)
+                {
+                    eventResult.Categories.Add(c.Name);
+                }
+                if (e.Banner != null)
+                {
+                    eventResult.HasBanner = true;
+                }
+                eventResult.IsFeatured = e.IsFeatured;
+            } 
             return eventResult;
         }
     }

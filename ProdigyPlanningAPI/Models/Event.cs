@@ -44,6 +44,9 @@ public partial class Event
     [Column("created_at")]
     public DateTime CreatedAt { get; set;} = DateTime.Now;
 
+    [Column("is_featured")]
+    public bool IsFeatured { get; set; } = false;
+
     [Column("is_deleted")]
     public bool IsDeleted { get; set; } = false;
 

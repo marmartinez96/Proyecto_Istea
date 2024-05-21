@@ -52,6 +52,39 @@ namespace ProdigyPlanningAPI.Controllers
             {
                 success = success,
                 message = message,
+                count = result.Count(),
+                result = result
+            };
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("GetFeatured")]
+        public dynamic GetFeatured()
+        {
+            bool success = true;
+            string message = "Success";
+            List<EventRetrievalModel> result = new List<EventRetrievalModel>();
+            try
+            {
+                List<Event> _events = _context.Events.Include(x => x.Banner).Include(x => x.CreatedByNavigation).Include(x => x.Categories).Where(x => x.IsDeleted == false).Where(x=> x.IsFeatured == true).ToList();
+                
+                foreach(Event e in _events)
+                {
+                    result.Add(EventRetrievalHelper.CreateRetrievalModel(_context, e));
+                }
+            }
+            catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+
+            return new
+            {
+                success = success,
+                message = message,
+                count = result.Count(),
                 result = result
             };
         }
@@ -189,6 +222,7 @@ namespace ProdigyPlanningAPI.Controllers
             {
                 success = success,
                 message = message,
+                count = result.Count(),
                 result = result
             };
         }
@@ -338,6 +372,67 @@ namespace ProdigyPlanningAPI.Controllers
                 message = "Se ha actualizado el evento "+ _event.Name;
             }
             catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+            return new
+            {
+                success = success,
+                message = message,
+                data = EventRetrievalHelper.CreateRetrievalModel(_context, _event)
+            };
+        }
+
+        [Authorize]
+        [HttpPatch]
+        [Route("SetFeatured")]
+        public dynamic SetFeatured(Event evnt)
+        {
+            bool success = true;
+            string message = "";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return token;
+
+            User user = token.result;
+            Event _event = new Event();
+            try
+            {
+                if (evnt.Id == 0)
+                {
+                    throw new Exception("Debe enviar un id para identificar al evento");
+                }
+                _event = _context.Events.Include(x=> x.CreatedByNavigation).Include(x=> x.Categories).Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Id == evnt.Id);
+                if (_event == null)
+                {
+                    throw new Exception("El evento que desea destacar no existe");
+                }
+                if (_event.CreatedByNavigation != user)
+                {
+                    throw new Exception("El evento solo puede ser destacado por su creador");
+                }
+                if (!user.IsPremium)
+                {
+                    throw new Exception("Solo los usuarios premiun pueden destacar eventos");
+                }
+                _event.IsFeatured = !_event.IsFeatured;
+                int userFeaturedEvents = _context.Events.Include(x => x.CreatedByNavigation).Where(x => x.IsDeleted == false).Where(x => x.IsFeatured == true).Where(x => x.CreatedByNavigation == user).Count();
+                if (userFeaturedEvents > 2 && _event.IsFeatured == true)
+                {
+                    throw new Exception("Solo se puede destacar un maximo de tres eventos");
+                }
+                _context.SaveChanges();
+                if (_event.IsFeatured)
+                {
+                    message = "Se destaco el evento " + _event.Name;
+                }
+                else
+                {
+                    message = "Se quito el destacado al evento " + _event.Name;
+                }
+            }
+            catch(Exception e)
             {
                 success = false;
                 message = e.Message;

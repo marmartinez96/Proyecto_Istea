@@ -12,5 +12,7 @@
         public string CreatedBy { get; set; }
         public List<string> Categories { get; set; } = new List<string>();
         public bool HasBanner { get; set; } = false;
+        public bool IsFeatured { get; set; } = false;
+
     }
 }
