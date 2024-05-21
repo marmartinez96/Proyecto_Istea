@@ -61,6 +61,10 @@ public partial class Event
     [InverseProperty("EventNavigation")]
     public virtual EventBanner? Banner { get; set; }
 
+    [Column("is_active")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+    public bool Is_Active { get; private set; }
+
     public Event()
     {
     }

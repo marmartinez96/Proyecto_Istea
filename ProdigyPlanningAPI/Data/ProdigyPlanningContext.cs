@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProdigyPlanningAPI.Models;
 
 namespace ProdigyPlanningAPI.Data;
@@ -77,6 +78,15 @@ public partial class ProdigyPlanningContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__users__3213E83F54C06594");
         });
+
+        modelBuilder.Entity<Event>()
+        .Property(e => e.Is_Active)// here is the computed query definition
+        .HasComputedColumnSql("CASE WHEN date >= GETDATE() THEN 1 ELSE 0 END", false);
+
+        modelBuilder
+        .Entity<Event>()
+        .Property(e => e.Is_Active)
+        .HasConversion<int>();
 
         OnModelCreatingPartial(modelBuilder);
     }
