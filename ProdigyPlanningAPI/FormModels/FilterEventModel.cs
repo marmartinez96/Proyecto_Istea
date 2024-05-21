@@ -10,6 +10,7 @@ namespace ProdigyPlanningAPI.FormModels
         [JsonConverter(typeof(DateOnlyJsonConverter))]
         public DateOnly FromDate { get; set; } = DateOnly.MinValue;
         [JsonConverter(typeof(DateOnlyJsonConverter))]
-        public DateOnly? ToDate { get; set; } = DateOnly.MaxValue;
+        public DateOnly ToDate { get; set; } = DateOnly.MaxValue;
+        public bool IsActive { get; set; } = false;
     }
 }

@@ -17,9 +17,17 @@ namespace ProdigyPlanningAPI.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ProdigyPlanningContext _context;
+        private IQueryable<Event> _activeEventQueryBP;
+        private IQueryable<Event> _listedEventQueryBP;
+        private IQueryable<Category> _listedCategoryQueryBP;
         public CategoryController(ProdigyPlanningContext context)
         {
             _context = context;
+
+            _activeEventQueryBP = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Include(x => x.Banner).Where(x => x.IsDeleted == false).Where(x => x.IsActive == true);
+            _listedEventQueryBP = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Include(x => x.Banner).Where(x => x.IsDeleted == false);
+
+            _listedCategoryQueryBP = _context.Categories.Include(x => x.Events).Where(x => x.IsDeleted == false);
         }
 
         [AllowAnonymous]
@@ -31,7 +39,7 @@ namespace ProdigyPlanningAPI.Controllers
             List<Category> result = null;
             try
             {
-                result = _context.Categories.Where(x=> x.IsDeleted == false).ToList();
+                result = _listedCategoryQueryBP.ToList();
             }
             catch (Exception e)
             {
@@ -62,12 +70,12 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("Debe ingresar un id de categoria valido");
                 }
-                Category _category = _context.Categories.Where(x=> x.IsDeleted == false).FirstOrDefault(c => c.Id == category.Id);
+                Category _category = _listedCategoryQueryBP.FirstOrDefault(c => c.Id == category.Id);
                 if (_category == null)
                 {
                     throw new Exception("La categoria que esta buscando no existe");
                 }
-                List<Event> _events = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Where(x => x.IsDeleted == false && x.Categories.Contains(_category)).ToList();
+                List<Event> _events = _activeEventQueryBP.Where(x => x.Categories.Contains(_category)).ToList();
                 foreach (Event e in _events)
                 {
                     EventRetrievalModel _event = EventRetrievalHelper.CreateRetrievalModel(_context, e);
@@ -118,7 +126,7 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("No se puede crear una categoria con un nombre en blanco");
                 }
-                Category _category = _context.Categories.FirstOrDefault(c => c.Name == category.Name);
+                Category _category = _listedCategoryQueryBP.FirstOrDefault(c => c.Name == category.Name);
                 if(_category != null)
                 {
                     if(category.IsDeleted == true)
@@ -172,7 +180,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
-                Category _category = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Id == changeCategoryModel.Id);
+                Category _category = _listedCategoryQueryBP.FirstOrDefault(c => c.Id == changeCategoryModel.Id);
                 if (_category == null) 
                 {
                     throw new Exception("La categoria que desea modificar no existe");
@@ -181,7 +189,7 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("El nuevo nombre coincide con el anterior");
                 }
-                if (_context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Name == changeCategoryModel.NewName) != null)
+                if (_listedCategoryQueryBP.FirstOrDefault(c => c.Name == changeCategoryModel.NewName) != null)
                 {
                     throw new Exception("Ya existe una categoria con ese nombre");
                 }
@@ -225,7 +233,7 @@ namespace ProdigyPlanningAPI.Controllers
             }
             try
             {
-                Category _category = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Id == category.Id);
+                Category _category = _listedCategoryQueryBP.FirstOrDefault(c => c.Id == category.Id);
                 if (_category == null)
                 {
                     throw new Exception("La categoria que desea eliminar no existe");

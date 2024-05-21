@@ -63,7 +63,7 @@ public partial class Event
 
     [Column("is_active")]
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-    public bool Is_Active { get; private set; }
+    public bool IsActive { get; private set; }
 
     public Event()
     {

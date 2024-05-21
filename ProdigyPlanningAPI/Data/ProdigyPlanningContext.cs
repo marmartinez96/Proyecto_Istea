@@ -80,12 +80,12 @@ public partial class ProdigyPlanningContext : DbContext
         });
 
         modelBuilder.Entity<Event>()
-        .Property(e => e.Is_Active)// here is the computed query definition
+        .Property(e => e.IsActive)// here is the computed query definition
         .HasComputedColumnSql("CASE WHEN date >= GETDATE() THEN 1 ELSE 0 END", false);
 
         modelBuilder
         .Entity<Event>()
-        .Property(e => e.Is_Active)
+        .Property(e => e.IsActive)
         .HasConversion<int>();
 
         OnModelCreatingPartial(modelBuilder);

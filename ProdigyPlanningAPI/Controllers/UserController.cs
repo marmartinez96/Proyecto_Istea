@@ -17,9 +17,17 @@ namespace ProdigyPlanningAPI.Controllers
     public class UserController : ControllerBase
     {
         private readonly ProdigyPlanningContext _context;
+        private IQueryable<Event> _activeEventQueryBP;
+        private IQueryable<Event> _listedEventQueryBP;
+        private IQueryable<Category> _listedCategoryQueryBP;
         public UserController(ProdigyPlanningContext context)
         {
             _context = context;
+
+            _activeEventQueryBP = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Include(x => x.Banner).Where(x => x.IsDeleted == false).Where(x => x.IsActive == true);
+            _listedEventQueryBP = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Include(x => x.Banner).Where(x => x.IsDeleted == false);
+
+            _listedCategoryQueryBP = _context.Categories.Include(x => x.Events).Where(x => x.IsDeleted == false);
         }
 
         [Authorize]
@@ -190,7 +198,7 @@ namespace ProdigyPlanningAPI.Controllers
         [Authorize]
         [HttpGet]
         [Route("GetOwnedEvents")]
-        public dynamic GetOwnedEvents()
+        public dynamic GetOwnedEvents(Event evnt)
         {
             bool success = true;
             string message = "success";
@@ -203,7 +211,15 @@ namespace ProdigyPlanningAPI.Controllers
             List<EventRetrievalModel> result = new List<EventRetrievalModel>();
             try
             {
-                List<Event> _events = _context.Events.Include(x=> x.CreatedByNavigation).Include(x=> x.Categories).Where(x=> x.IsDeleted == false && x.CreatedByNavigation == _user).ToList();
+                List<Event> _events = new List<Event>();
+                if (evnt.IsActive == true) 
+                {
+                    _events = _activeEventQueryBP.Where(x => x.CreatedByNavigation == _user).ToList();
+                }
+                else
+                {
+                    _events = _listedEventQueryBP.Where(x => x.CreatedByNavigation == _user).ToList();
+                }
                 foreach (Event e in _events)
                 {
                     EventRetrievalModel _event = EventRetrievalHelper.CreateRetrievalModel(_context, e);
