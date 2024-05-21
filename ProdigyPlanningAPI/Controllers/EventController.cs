@@ -771,6 +771,74 @@ namespace ProdigyPlanningAPI.Controllers
             };
         }
 
+        [Authorize]
+        [HttpPatch]
+        [Route("ReplaceCategory")]
+        public dynamic ReplaceCategory(EventCategoryReplaceModel evnt)
+        {
+            bool success = true;
+            string message = "";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return token;
+
+            User user = token.result;
+
+            Event _evnt = null;
+            try
+            {
+                _evnt = _activeEventQueryBP.FirstOrDefault(x => x.Id == evnt.EventId);
+                if (_evnt == null)
+                {
+                    throw new Exception("Debe enviar un id de evento valido");
+                }
+                if (user != _evnt.CreatedByNavigation)
+                {
+                    throw new Exception("Solo el organizador puede modificar las categorias de un evento");
+                }
+
+                Category _cat0 = _listedCategoryQueryBP.FirstOrDefault(x => x.Id == evnt.ReplaceId);
+                if (_cat0 == null)
+                {
+                    throw new Exception("La categoria que desea reemplazar no existe");
+                }
+                if (!_evnt.Categories.Contains(_cat0))
+                {
+                    throw new Exception("Este evento no contiene la categoria " + _cat0.Name);
+                }
+
+                Category _cat1 = _listedCategoryQueryBP.FirstOrDefault(x => x.Id == evnt.ReplacementId);
+                if (_cat1 == null)
+                {
+                    throw new Exception("La categoria con la que desea reemplazar a "+ _cat0.Name+" no existe");
+                }
+                if (_evnt.Categories.Contains(_cat1))
+                {
+                    throw new Exception("Este evento ya contiene la categoria " + _cat1.Name);
+                }
+
+                _evnt.Categories.Remove(_cat0);
+                _cat0.Events.Remove(_evnt);
+
+                _evnt.Categories.Add(_cat1);
+                _cat1.Events.Add(_evnt);
+
+                message = "Se reemplazo la categoria " + _cat0.Name + " a " + _cat1.Name;
+                _context.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+            return new
+            {
+                success = success,
+                message = message,
+                data = EventRetrievalHelper.CreateRetrievalModel(_context, _evnt)
+            };
+        }
+
         private DateOnly cdPeriodToDateTime(string cdPeriod)
         {
             DateOnly result = DateOnly.MinValue;
