@@ -2,7 +2,7 @@
 {
     public class ChangeCategoryModel
     {
-        public string OldName { get; set; }
+        public int Id { get; set; }
         public string NewName { get; set; }
     }
 }

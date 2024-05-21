@@ -58,14 +58,14 @@ namespace ProdigyPlanningAPI.Controllers
             List<EventRetrievalModel> result = new List<EventRetrievalModel>();
             try
             {
-                if(category.Id == null || category.Id <= 0)
+                if(category.Id == 0)
                 {
                     throw new Exception("Debe ingresar un id de categoria valido");
                 }
                 Category _category = _context.Categories.Where(x=> x.IsDeleted == false).FirstOrDefault(c => c.Id == category.Id);
                 if (_category == null)
                 {
-                    throw new Exception("La categoria queesta buscando no existe");
+                    throw new Exception("La categoria que esta buscando no existe");
                 }
                 List<Event> _events = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Where(x => x.IsDeleted == false && x.Categories.Contains(_category)).ToList();
                 foreach (Event e in _events)
@@ -108,14 +108,16 @@ namespace ProdigyPlanningAPI.Controllers
                     message = "Necesita permisos de administrador para utilizar este recurso",
                 };
             }
-
             try
-            { 
-                if(category.Name == null || category.Name.Trim() == "")
+            {
+                if (category.Id != 0)
+                {
+                    throw new Exception("El id debe estar vacio para que se otorgue uno en la base de datos");
+                }
+                if (category.Name == null || category.Name.Trim() == "")
                 {
                     throw new Exception("No se puede crear una categoria con un nombre en blanco");
                 }
-
                 Category _category = _context.Categories.FirstOrDefault(c => c.Name == category.Name);
                 if(_category != null)
                 {
@@ -139,7 +141,6 @@ namespace ProdigyPlanningAPI.Controllers
                 success= false;
                 message = e.Message;
             }
-
             return new
             {
                 success = success,
@@ -171,7 +172,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
-                Category _category = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Name == changeCategoryModel.OldName);
+                Category _category = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Id == changeCategoryModel.Id);
                 if (_category == null) 
                 {
                     throw new Exception("La categoria que desea modificar no existe");
@@ -184,9 +185,10 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("Ya existe una categoria con ese nombre");
                 }
+                string oldName = _category.Name;
                 _category.Name = changeCategoryModel.NewName;
                 _context.SaveChanges();
-                message = "Se ha actualizado el nombre de la categoria " + changeCategoryModel.OldName + " a: " + _category.Name;
+                message = "Se ha actualizado el nombre de la categoria " + oldName + " a: " + _category.Name;
             }
             catch (Exception e)
             {
@@ -223,7 +225,7 @@ namespace ProdigyPlanningAPI.Controllers
             }
             try
             {
-                Category _category = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Name == category.Name);
+                Category _category = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Id == category.Id);
                 if (_category == null)
                 {
                     throw new Exception("La categoria que desea eliminar no existe");

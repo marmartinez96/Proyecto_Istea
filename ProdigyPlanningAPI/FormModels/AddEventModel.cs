@@ -8,11 +8,11 @@ namespace ProdigyPlanningAPI.FormModels
         public string Name { get; set; }
         public string Description { get; set; }
         [JsonConverter(typeof(DateOnlyJsonConverter))]
-        public DateOnly Date { get; set; }
+        public DateOnly Date { get; set; } = DateOnly.MinValue;
         [JsonConverter(typeof(TimeOnlyJsonConverter))]
-        public TimeOnly Time { get; set; }
+        public TimeOnly Time { get; set; } = TimeOnly.MinValue;
         public string Location { get; set; }
-        public string Category { get; set; }
+        public int? CategoryId { get; set; }
         public int Duration { get; set; }
     }
 }

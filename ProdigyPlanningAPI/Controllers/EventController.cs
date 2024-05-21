@@ -27,7 +27,7 @@ namespace ProdigyPlanningAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        [Route("GetAll")]
+        [Route("/events")]
         public dynamic GetEvents()
         {
             bool success = true;
@@ -214,16 +214,18 @@ namespace ProdigyPlanningAPI.Controllers
                     message = "Necesita permisos de organizador para utilizar este recurso",
                 };
             }
-            if (user.IsPremium == false && _context.Events.Include(x=> x.CreatedByNavigation).Where(x=> x.IsDeleted == false).ToList().Count() > 2)
-            {
-                return new
-                {
-                    success = true,
-                    message = "El limite de eventos activos al mismo tiempo para un usuario gratuito es de tres",
-                };
-            }
             try
             {
+                int currentMonth = DateTime.Now.Month;
+                int currentYear = DateTime.Now.Year;
+                DateTime firstDayOfMonth = new DateTime(currentYear, currentMonth, 1);
+                DateTime lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddTicks(-1);
+                int userMonthlyEventCount = _context.Events.Include(x => x.CreatedByNavigation).Where(x => x.IsDeleted == false).Where(x => x.CreatedByNavigation == user).Where(x=> x.CreatedAt >= firstDayOfMonth).Where(x=> x.CreatedAt <= lastDayOfMonth).Count();
+
+                if (user.IsPremium == false && userMonthlyEventCount > 3)
+                {
+                    throw new Exception("Se alcanzo el limite de eventos creados para usuarios gratuitos");
+                }
                 if (evnt.Name == null || evnt.Name.Trim() == "")
                 {
                     throw new Exception("El campo nombre no puede estar vacio");
@@ -232,15 +234,15 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("El campo ubicacion no puede estar vacio");
                 }
-                if (evnt.Date == null)
+                if (evnt.Date == DateOnly.MinValue)
                 {
                     throw new Exception("El campo fecha no puede estar vacio");
                 }
-                if (evnt.Time == null)
+                if (evnt.Time == TimeOnly.MinValue)
                 {
                     throw new Exception("El campo horario no puede estar vacio");
                 }
-                if (evnt.Category == null)
+                if (evnt.CategoryId == null)
                 {
                     throw new Exception("El campo categoria no puede estar vacio");
                 }
@@ -256,10 +258,10 @@ namespace ProdigyPlanningAPI.Controllers
                 _event.Duration = evnt.Duration;
                 user.Events.Add(_event);
 
-                Category _cat = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Name.ToLower() == evnt.Category.ToLower());
+                Category _cat = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Id == evnt.CategoryId);
                 if(_cat == null )
                 {
-                    throw new Exception("No se encontro la categoria "+evnt.Category);
+                    throw new Exception("No se encontro la categoria con id:"+evnt.CategoryId);
                 }
 
                 _event.Categories.Add(_cat);
@@ -301,10 +303,10 @@ namespace ProdigyPlanningAPI.Controllers
                     message = "Necesita permisos de organizador para utilizar este recurso",
                 };
             }
-
+            Event _event = null;
             try
             {
-                Event _event = _context.Events.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Id == changeEventModel.Id);
+                _event = _context.Events.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Id == changeEventModel.Id);
                 if (_event == null)
                 {
                     throw new Exception("El evento que desea modificar no existe");
@@ -315,16 +317,16 @@ namespace ProdigyPlanningAPI.Controllers
                 }
                 if(changeEventModel.NewName != null && changeEventModel.NewName != _event.Name) { _event.Name = changeEventModel.NewName; }
                 if(changeEventModel.NewDescription != null && changeEventModel.NewDescription != _event.Description) { _event.Description = changeEventModel.NewDescription;}
-                if(changeEventModel.NewDate != null && changeEventModel.NewDate != _event.Date) { _event.Date = changeEventModel.NewDate;}
-                if(changeEventModel.NewTime != null && changeEventModel.NewTime != _event.Time) { _event.Time = changeEventModel.NewTime;}
+                if(changeEventModel.NewDate != DateOnly.MinValue && changeEventModel.NewDate != _event.Date) { _event.Date = changeEventModel.NewDate;}
+                if(changeEventModel.NewTime != TimeOnly.MinValue && changeEventModel.NewTime != _event.Time) { _event.Time = changeEventModel.NewTime;}
                 if(changeEventModel.NewLocation != null && changeEventModel.NewLocation != _event.Location) { _event.Location = changeEventModel.NewLocation;}
                 if(changeEventModel.NewDuration != null && changeEventModel.NewDuration != _event.Duration) { _event.Duration = changeEventModel.NewDuration;}
-                if(changeEventModel.NewCategory != null)
+                if(changeEventModel.NewCategoryId != null)
                 {
-                    Category _cat = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Name.ToLower() == changeEventModel.NewCategory.ToLower());
+                    Category _cat = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Id == changeEventModel.NewCategoryId);
                     if (_cat == null)
                     {
-                        throw new Exception("No se encontro la categoria " + changeEventModel.NewCategory);
+                        throw new Exception("No se encontro la categoria con id: " + changeEventModel.NewCategoryId);
                     }
                     if (!_event.Categories.Contains(_cat))
                     {
@@ -344,6 +346,7 @@ namespace ProdigyPlanningAPI.Controllers
             {
                 success = success,
                 message = message,
+                data = EventRetrievalHelper.CreateRetrievalModel(_context, _event)
             };
         }
 
@@ -371,7 +374,11 @@ namespace ProdigyPlanningAPI.Controllers
             }
             try
             {
-                Event _event = _context.Events.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Name == evnt.Name);
+                if(evnt.Id == 0)
+                {
+                    throw new Exception("Es obligatorio proveer un id para identificar el evento a eliminar");
+                }
+                Event _event = _context.Events.Where(x => x.IsDeleted == false).FirstOrDefault(c => c.Id == evnt.Id);
                 if (_event == null)
                 {
                     throw new Exception("El evento que desea eliminar no existe");
@@ -380,10 +387,9 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("El evento solo puede ser eliminado por su creador");
                 }
-                
                 _event.IsDeleted = true;
                 _context.SaveChanges();
-                message = "Se ha eliminado el evento " + evnt.Name;
+                message = "Se ha eliminado el evento " + _event.Name;
             }
             catch (Exception e)
             {
@@ -477,6 +483,7 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
+
                 Event _event = _context.Events.Include(x=>x.Banner).Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Id == evnt.Id);
                 if (_event == null)
                 {
@@ -571,14 +578,18 @@ namespace ProdigyPlanningAPI.Controllers
                     throw new Exception("Solo el organizador puede modificar las categorias de un evento");
                 }
 
-                Category _cat = _context.Categories.Where(x=> x.IsDeleted == false).FirstOrDefault(x => x.Name == evnt.Category);
+                Category _cat = _context.Categories.Where(x=> x.IsDeleted == false).FirstOrDefault(x => x.Id == evnt.CategoryId);
                 if (_cat == null)
                 {
                     throw new Exception("La categoria que desea agregar no existe");
                 }
                 if (_evnt.Categories.Contains(_cat))
                 {
-                    throw new Exception("Este evento ya contiene la categoria "+evnt.Category);
+                    throw new Exception("Este evento ya contiene la categoria "+_cat.Name);
+                }
+                if (_evnt.Categories.Count()>1)
+                {
+                    throw new Exception("Este evento ya pertenece al numero maximo de categorias posibles. Quite una categoria y vuelva a intentar");
                 }
                 _evnt.Categories.Add(_cat);
                 _cat.Events.Add(_evnt);
@@ -620,7 +631,7 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("Solo el organizador puede modificar las categorias de un evento");
                 }
-                Category _cat = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Name == evnt.Category);
+                Category _cat = _context.Categories.Where(x => x.IsDeleted == false).FirstOrDefault(x => x.Id == evnt.CategoryId);
                 if (_cat == null)
                 {
                     throw new Exception("La categoria que desea eliminar del evento no existe");
@@ -628,6 +639,10 @@ namespace ProdigyPlanningAPI.Controllers
                 if (!_evnt.Categories.Contains(_cat))
                 {
                     throw new Exception("El evento no contiene la categoria que desea eliminar");
+                }
+                if (_evnt.Categories.Count() < 2)
+                {
+                    throw new Exception("Si se quita la categoria "+_cat.Name+" el evento se qeudaria sin categorias. Agrege por lo menos una categoria mas antes de quitar esta o utilice el metodo de reemplazo.");
                 }
                 _evnt.Categories.Remove(_cat);
                 _cat.Events.Remove(_evnt);
