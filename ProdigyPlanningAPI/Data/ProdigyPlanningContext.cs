@@ -24,6 +24,8 @@ public partial class ProdigyPlanningContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<EventBanner> EventBanners { get; set; }
+    public virtual DbSet<SecurityQuestion> SecurityQuestions { get; set; }
+    public virtual DbSet<UserQuestion> UserQuestions { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

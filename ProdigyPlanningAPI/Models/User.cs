@@ -41,4 +41,7 @@ public partial class User
 
     [InverseProperty("CreatedByNavigation")]
     public virtual ICollection<Event> Events { get; set; } = new List<Event>();
+
+    [InverseProperty("User")]
+    public virtual UserQuestion UserQuestion { get; set; }
 }

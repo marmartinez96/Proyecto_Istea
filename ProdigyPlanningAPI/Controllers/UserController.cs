@@ -121,7 +121,7 @@ namespace ProdigyPlanningAPI.Controllers
         [AllowAnonymous]
         [HttpPatch]
         [Route("RecoverPassword")]
-        public async Task<IActionResult> emailTest(User user)
+        public async Task<IActionResult> RecoverPassword(PasswordRecoveryModel user)
         {
             if (user.Email == null)
             {
@@ -131,6 +131,22 @@ namespace ProdigyPlanningAPI.Controllers
                     message = "Se debe proporcionar un correo electronico para el reseteo de contraseña",
                 });
             }
+            if (user.QuestionId == 0)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Se debe proporcionar una pregunta para el reseteo de contraseña",
+                });
+            }
+            if (user.Answer == null)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Se debe proporcionar una respuesta para el reseteo de contraseña",
+                });
+            }
             User _user = await _context.Users.FirstOrDefaultAsync(x => x.Email == user.Email);
             if (_user == null)
             {
@@ -138,6 +154,32 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     success = false,
                     message = "No se encontro un usuario asociado con ese correo electronico",
+                });
+            }
+            SecurityQuestion securityQuestion = await _context.SecurityQuestions.FirstOrDefaultAsync(x => x.Id == user.QuestionId);
+            if (securityQuestion == null)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "No se encontro ninguna pregunta de seguridad con el id proporcionado",
+                });
+            }
+            UserQuestion userQuestion = await _context.UserQuestions.Include(x=> x.User).Include(x => x.Question).FirstOrDefaultAsync(x => x.User == _user);
+            if (userQuestion == null)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "No se encontro ninguna pregunta de seguridad asociada al correo enviado",
+                });
+            }
+            if (userQuestion.Question != securityQuestion || !BC.EnhancedVerify(user.Answer, userQuestion.Answer))
+            {
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = "La pregunta o la respuesta son incorrectos",
                 });
             }
 

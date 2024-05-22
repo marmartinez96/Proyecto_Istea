@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Common;
 using ProdigyPlanningAPI.Data;
+using ProdigyPlanningAPI.FormModels;
 using ProdigyPlanningAPI.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -84,7 +85,7 @@ namespace ProdigyPlanningAPI.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("Signup")]
-        public IActionResult SignUp(User user)
+        public IActionResult SignUp(SignupModel user)
         {
             IActionResult response = BadRequest();
             try
@@ -112,6 +113,15 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("El campo contraseña no puede estar vacio");
                 }
+                SecurityQuestion _question = _context.SecurityQuestions.FirstOrDefault(x => x.Id == user.UserQuestionId);
+                if (_question == null)
+                {
+                    throw new Exception("Se debe establecer una preguta de seguridad");
+                }
+                if (user.UserQuestionAnswer == null)
+                {
+                    throw new Exception("Se debe establecer una respuesta a la preguta de seguridad");
+                }
 
                 _user = new User();
                 _user.Name = user.Name;
@@ -127,6 +137,15 @@ namespace ProdigyPlanningAPI.Controllers
                     _user.Roles = "[ROLE_USER]";
                 }
                 _context.Add(_user);
+
+                UserQuestion securityQuestion = new UserQuestion();
+                securityQuestion.UserId = _user.Id;
+                securityQuestion.User = _user;
+                securityQuestion.QuestionId = user.UserQuestionId;
+                securityQuestion.Question = _question;
+                securityQuestion.Answer = BC.EnhancedHashPassword(user.UserQuestionAnswer, 13);
+                _context.Add(securityQuestion);
+
                 _context.SaveChanges();
                 response = Ok("Usuario creado con exito");
 
