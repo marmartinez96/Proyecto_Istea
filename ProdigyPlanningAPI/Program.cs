@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using ProdigyPlanningAPI.Data;
+using ProdigyPlanningAPI.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddControllers();
 
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 var connectionString = builder.Configuration.GetConnectionString("conn_string_events");
 builder.Services.AddDbContext<ProdigyPlanningContext>(x => x.UseSqlServer(connectionString, x=> x.UseDateOnlyTimeOnly()));
