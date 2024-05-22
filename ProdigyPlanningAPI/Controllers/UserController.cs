@@ -10,6 +10,7 @@ using ProdigyPlanningAPI.Helpers;
 using ProdigyPlanningAPI.Models;
 using System.Security.Claims;
 
+
 namespace ProdigyPlanningAPI.Controllers
 {
     [Route("[controller]")]
@@ -20,7 +21,8 @@ namespace ProdigyPlanningAPI.Controllers
         private IQueryable<Event> _activeEventQueryBP;
         private IQueryable<Event> _listedEventQueryBP;
         private IQueryable<Category> _listedCategoryQueryBP;
-        public UserController(ProdigyPlanningContext context)
+        private IEmailSender _emailSender;
+        public UserController(ProdigyPlanningContext context, IEmailSender emailSender)
         {
             _context = context;
 
@@ -28,6 +30,7 @@ namespace ProdigyPlanningAPI.Controllers
             _listedEventQueryBP = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Include(x => x.Banner).Where(x => x.IsDeleted == false);
 
             _listedCategoryQueryBP = _context.Categories.Include(x => x.Events).Where(x => x.IsDeleted == false);
+            _emailSender = emailSender;
         }
 
         [Authorize]
@@ -113,6 +116,56 @@ namespace ProdigyPlanningAPI.Controllers
                 success = success,
                 message = message,
             };
+        }
+
+        [AllowAnonymous]
+        [HttpPatch]
+        [Route("RecoverPassword")]
+        public async Task<IActionResult> emailTest(User user)
+        {
+            if (user.Email == null)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Se debe proporcionar un correo electronico para el reseteo de contraseña",
+                });
+            }
+            User _user = await _context.Users.FirstOrDefaultAsync(x => x.Email == user.Email);
+            if (_user == null)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "No se encontro un usuario asociado con ese correo electronico",
+                });
+            }
+
+            int length = 10;
+            string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
+            var random = new Random();
+            string password = new string(Enumerable.Repeat(chars, length)
+              .Select(s => s[random.Next(s.Length)]).ToArray());
+
+            _user.Password = BC.EnhancedHashPassword(password, 13);
+            await _context.SaveChangesAsync();
+
+            
+            string receiver = _user.Email;
+            string subject = "No-Responder Recuperacion de contraseña";
+            string message = "<p>Se ha solicitado el cambio de contraseña </p>" +
+                $"<p>Nombre: {_user.Name} {_user.Surname} </p>" +
+                $"<p>Nueva contraseña generada aleatoriamente: {password} </p>" +
+                $"<p>Se recomienda cambiar la contraseña la proxima vez que inicie sesion</p>" +
+                $"<p>Equipo de Prodigy Panning</p>" +
+                $"<p>Por favor no responda a este mensaje.</p>";
+
+            await _emailSender.SendEmailAsync(receiver, subject, message);
+            return Ok(new
+            {
+                success = true,
+                message = "Email de recuperacion de contraseña enviado con exito",
+            });
         }
 
         [Authorize]

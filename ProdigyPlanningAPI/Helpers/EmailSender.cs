@@ -16,12 +16,14 @@ namespace ProdigyPlanningAPI.Helpers
                 EnableSsl = true,
                 Credentials = new NetworkCredential(_email,_password)
             };
-            return client.SendMailAsync(
-                new MailMessage(
-                    from: _email,
-                    to: email,
-                    subject,
-                    message));
+            MailMessage _mail = new MailMessage();
+            _mail.IsBodyHtml = true;
+            _mail.From = new MailAddress(_email);
+            _mail.To.Add(email);
+            _mail.Subject = subject;
+            _mail.Body = message;
+
+            return client.SendMailAsync(_mail);
         }
     }
 }
