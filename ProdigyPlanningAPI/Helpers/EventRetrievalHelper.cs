@@ -4,7 +4,6 @@ using NuGet.Common;
 using ProdigyPlanningAPI.Data;
 using ProdigyPlanningAPI.FormModels;
 using ProdigyPlanningAPI.Models;
-using System.Security.Claims;
 
 namespace ProdigyPlanningAPI.Helpers
 {

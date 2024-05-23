@@ -35,6 +35,27 @@ namespace ProdigyPlanningAPI.Controllers
 
         [Authorize]
         [HttpGet]
+        [Route("GetUser")]
+        public dynamic GetUser()
+        {
+            bool success = true;
+            string message = "Success";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return token;
+
+            User user = token.result;
+
+            return new
+            {
+                success = success,
+                message = message,
+                data = UserRetrievalHelper.CreateRetrievalModel(_context, user)
+            };
+        }
+
+        [Authorize]
+        [HttpGet]
         [Route("GetRoles")]
         public dynamic GetRoles()
         {

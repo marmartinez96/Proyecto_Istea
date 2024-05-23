@@ -43,5 +43,5 @@ public partial class User
     public virtual ICollection<Event> Events { get; set; } = new List<Event>();
 
     [InverseProperty("User")]
-    public virtual UserQuestion UserQuestion { get; set; }
+    public virtual UserQuestion? UserQuestion { get; set; }
 }

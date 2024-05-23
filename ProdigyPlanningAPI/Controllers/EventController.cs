@@ -8,9 +8,13 @@ using ProdigyPlanningAPI.Data;
 using ProdigyPlanningAPI.FormModels;
 using ProdigyPlanningAPI.Helpers;
 using ProdigyPlanningAPI.Models;
+using SixLabors.ImageSharp.Formats.Png;
 using System.Data;
 using System.Diagnostics.Tracing;
 using System.Security.Claims;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Processing;
 
 namespace ProdigyPlanningAPI.Controllers
 {
@@ -526,6 +530,7 @@ namespace ProdigyPlanningAPI.Controllers
             if (!token.success) return token;
 
             User user = token.result;
+            EventRetrievalModel result = null; 
 
             try
             {
@@ -542,30 +547,49 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     throw new Exception("Solo el organizador de un evento puedo modificar el banner");
                 }
-
-                if (formFile != null && _event != null)
+                EventBanner _eventBanner = _context.EventBanners.FirstOrDefault(x => x.EventId == _event.Id);
+                if (_eventBanner != null)
                 {
-                    EventBanner _eventBanner = _context.EventBanners.FirstOrDefault(x => x.EventId == _event.Id);
-                    if (_eventBanner != null)
+                    _context.EventBanners.Remove(_eventBanner);
+                }
+
+                var encoder = new PngEncoder();
+                using (var stream = formFile.OpenReadStream())
+                {
+                    using (var output = new MemoryStream())
+                    using (Image image = Image.Load(stream))
                     {
-                        _context.EventBanners.Remove(_eventBanner);
-                    }
-                    using (MemoryStream stream = new MemoryStream())
-                    {
-                        formFile.CopyTo(stream);
+                        if(image.Height > 90 || image.Width > 728) { throw new Exception("La imagen debe tener un tamaño de 728x90 como maximo"); }
+
                         _eventBanner = new EventBanner()
                         {
                             EventId = _event.Id,
                             EventNavigation = _event,
-                            EventImage = stream.ToArray()
+                            EventImage = output.ToArray()
                         };
 
                         _context.EventBanners.Add(_eventBanner);
                         _context.SaveChanges();
                     }
-                    _event.Banner = _eventBanner;
-                    _context.SaveChanges();
                 }
+                _event.Banner = _eventBanner;
+                _context.SaveChanges();
+                result = EventRetrievalHelper.CreateRetrievalModel(_context, _event);
+                //using (MemoryStream stream = new MemoryStream())
+                //{
+                //    formFile.CopyTo(stream);
+                //    _eventBanner = new EventBanner()
+                //    {
+                //        EventId = _event.Id,
+                //        EventNavigation = _event,
+                //        EventImage = stream.ToArray()
+                //    };
+                //
+                //    _context.EventBanners.Add(_eventBanner);
+                //    _context.SaveChanges();
+                //}
+                //_event.Banner = _eventBanner;
+                //_context.SaveChanges();
             }
             catch (Exception e)
             {
@@ -576,6 +600,7 @@ namespace ProdigyPlanningAPI.Controllers
             {
                 success = success,
                 message = message,
+                result= result
             };
         }
 
