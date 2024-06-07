@@ -32,7 +32,14 @@ builder.Services.AddDbContext<ProdigyPlanningContext>(x => x.UseSqlServer(connec
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers().AddNewtonsoftJson(x => { x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore; });
+
+builder.Services.AddCors(policyBuilder =>
+    policyBuilder.AddDefaultPolicy(policy =>
+        policy.WithOrigins("*").AllowAnyHeader().AllowAnyMethod())
+);
+
 var app = builder.Build();
+app.UseCors();
 
 // Configure the HTTP request pipeline.
 app.UseAuthentication();
