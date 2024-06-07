@@ -1,0 +1,46 @@
+{
+	"info": {
+		"_postman_id": "c0e28072-01d3-4c3a-96e9-9cd3e417aeec",
+		"name": "Login",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "27554239"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"manuel.martinez@istea.com.ar\",\r\n    \"password\": \"123456\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Login"
+			},
+			"response": []
+		},
+		{
+			"name": "Signup",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Manuel\",\r\n    \"surname\": \"Martinez\",\r\n    \"email\": \"manuel.martinez@istea.com.ar\",\r\n    \"roles\": \"Organizador\",\r\n    \"password\": \"123456\",\r\n    \"UserQuestionId\": \"1\",\r\n    \"UserQuestionAnswer\": \"Juan\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Login/Signup"
+			},
+			"response": []
+		}
+	]
+}

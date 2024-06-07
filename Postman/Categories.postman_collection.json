@@ -1,0 +1,114 @@
+{
+	"info": {
+		"_postman_id": "38881f77-f931-40b5-a6af-4f1cc585415e",
+		"name": "Categories",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "27554239"
+	},
+	"item": [
+		{
+			"name": "GetEvents",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiYjdkOGY4ODktMGJjNS00YzlmLWFjMmYtMjAwYmVlNGNlMjU4IiwiaWF0IjoiMTcvMDUvMjAyNCAxOToyOTowMyIsImlkIjoiMTAwMiIsImV4cCI6MTcxNTk5NTc0MywiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.BcXzYiRRXWnHtxZfGItkQYnztFMFL9UGZNqsgP8czW0"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\":\"1003\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Category/GetEvents"
+			},
+			"response": []
+		},
+		{
+			"name": "GetCategories",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:5276/Category"
+			},
+			"response": []
+		},
+		{
+			"name": "AddCategory",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiMmFiZDMwZjktNTg3Ny00NzdhLWFjNzYtZDYzYjhlMjRhNzBlIiwiaWF0IjoiMTAvMDUvMjAyNCAxNTozOTowMSIsImlkIjoiMiIsImV4cCI6MTcxNTM3NzE0MSwiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.jOigG0oMWVVZ2dkqSl0TGqcK4K5jdiG4LLiP2NHd4M0"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Name\": \"Cine\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Category/Add"
+			},
+			"response": []
+		},
+		{
+			"name": "EditCategory",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiMmFiZDMwZjktNTg3Ny00NzdhLWFjNzYtZDYzYjhlMjRhNzBlIiwiaWF0IjoiMTAvMDUvMjAyNCAxNTozOTowMSIsImlkIjoiMiIsImV4cCI6MTcxNTM3NzE0MSwiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.jOigG0oMWVVZ2dkqSl0TGqcK4K5jdiG4LLiP2NHd4M0"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Id\": \"1\",\r\n    \"newName\": \"Musical\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Category/Edit"
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteCategory",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiMmFiZDMwZjktNTg3Ny00NzdhLWFjNzYtZDYzYjhlMjRhNzBlIiwiaWF0IjoiMTAvMDUvMjAyNCAxNTozOTowMSIsImlkIjoiMiIsImV4cCI6MTcxNTM3NzE0MSwiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.jOigG0oMWVVZ2dkqSl0TGqcK4K5jdiG4LLiP2NHd4M0"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Id\": \"1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Category/Delete"
+			},
+			"response": []
+		}
+	]
+}
