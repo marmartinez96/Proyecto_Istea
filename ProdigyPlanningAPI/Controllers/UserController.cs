@@ -36,94 +36,93 @@ namespace ProdigyPlanningAPI.Controllers
         [Authorize]
         [HttpGet]
         [Route("GetUser")]
-        public dynamic GetUser()
+        public async Task<IActionResult> GetUser()
         {
-            bool success = true;
-            string message = "Success";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
             if (!token.success) return token;
 
             User user = token.result;
 
-            return new
+            return Ok(new
             {
-                success = success,
-                message = message,
+                success = true,
+                message = "Success",
                 data = UserRetrievalHelper.CreateRetrievalModel(_context, user)
-            };
+            });
         }
 
         [Authorize]
         [HttpGet]
         [Route("GetRoles")]
-        public dynamic GetRoles()
+        public async Task<IActionResult> GetRoles()
         {
             bool success = true;
             string message = "Success";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success) return Unauthorized(token);
 
             User user = token.result;
 
-            return new
+            var result = new
             {
                 success = success,
                 message = message,
                 data = user.Roles
             };
+
+            return Ok(await Task.FromResult(result));
         }
 
         [Authorize]
         [HttpGet]
         [Route("IsPremium")]
-        public dynamic GetIsPremium()
+        public async Task<IActionResult> GetIsPremium()
         {
-            bool success = true;
-            string message = "Success";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success)
+                return Unauthorized(new { success = false, message = token.message });
 
             User user = token.result;
 
-            return new
+            return Ok(new
             {
-                success = success,
-                message = message,
+                success = true,
+                message = "Success",
                 data = user.IsPremium
-            };
+            });
         }
 
         [Authorize]
         [HttpPatch]
         [Route("UpdatePassword")]
-        public dynamic UpdatePassword(ChangePasswordModel passwordModel)
+        public async Task<IActionResult> UpdatePassword(ChangePasswordModel passwordModel)
         {
             bool success = true;
             string message = "Contraseña cambiada exitosamente";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success) return Unauthorized(token);
 
             User user = token.result;
             try
             {
                 if (passwordModel.OldPassword != passwordModel.ConfirmPassword)
                 {
-                    throw new Exception("Las contraseñas no coinciden");
+                    return BadRequest(new { success = false, message = "Las contraseñas no coinciden" });
                 }
 
                 if (!BC.EnhancedVerify(passwordModel.OldPassword, user.Password))
                 {
-                    throw new Exception("La contraseña enviada es incorrecta");
+                    return BadRequest(new { success = false, message = "La contraseña enviada es incorrecta" });
                 }
 
                 if (passwordModel.OldPassword == passwordModel.ConfirmPassword && BC.EnhancedVerify(passwordModel.OldPassword, user.Password))
                 {
                     user.Password = BC.EnhancedHashPassword(passwordModel.NewPassword, 13);
-                    _context.SaveChanges();
+                    await _context.SaveChangesAsync();
                 }
             }
             catch (Exception e)
@@ -132,11 +131,14 @@ namespace ProdigyPlanningAPI.Controllers
                 message = e.Message;
             }
 
-            return new
+            if (success)
             {
-                success = success,
-                message = message,
-            };
+                return Ok(new { success = true, message = message });
+            }
+            else
+            {
+                return BadRequest(new { success = false, message = message });
+            }
         }
 
         [AllowAnonymous]
@@ -234,23 +236,25 @@ namespace ProdigyPlanningAPI.Controllers
         [Authorize]
         [HttpPatch]
         [Route("UpdateUser")]
-        public dynamic UpdateUser(User user)
+        public async Task<IActionResult> UpdateUser(User user)
         {
             bool success = true;
             string message = "Campos actualizados exitosamente";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
-        
+            if (!token.success) return Unauthorized();
+
             User _user = token.result;
-        
+
             try
             {
-                var emailValidation = _context.Users.Where(x => x.IsDeleted == false).FirstOrDefault(a => a.Email == user.Email);
+                var emailValidation = await _context.Users
+                    .Where(x => !x.IsDeleted)
+                    .FirstOrDefaultAsync(a => a.Email == user.Email);
 
                 if (emailValidation != null && emailValidation != _user)
                 {
-                    throw new Exception("Ese email ya esta registrado");
+                    throw new Exception("Ese email ya está registrado");
                 }
 
                 if (user.Name != null && user.Name != _user.Name) { _user.Name = user.Name; }
@@ -264,127 +268,138 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     _user.Roles = "[ROLE_USER]";
                 }
-                _context.SaveChanges();
+
+                await _context.SaveChangesAsync();
             }
             catch (Exception e)
             {
                 success = false;
                 message = e.Message;
             }
-            
-            return new
+
+            if (success)
             {
-                success = success,
-                message = message,
-                data = _user
-            };
+                return Ok(new
+                {
+                    success = true,
+                    message = message,
+                    data = _user
+                });
+            }
+            else
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = message
+                });
+            }
         }
 
         [Authorize]
         [HttpDelete]
         [Route("DeleteUser")]
-        public dynamic DeleteUser()
+        public async Task<IActionResult> DeleteUser()
         {
             bool success = true;
             string message = "Usuario eliminado exitosamente";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success) return Unauthorized(token);
 
             User _user = token.result;
 
             try
             {
                 _user.IsDeleted = true;
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 success = false;
                 message = e.Message;
+                return BadRequest(new { success = success, message = message });
             }
 
-            return new
-            {
-                success = success,
-                message = message,
-            };
+            return Ok(new { success = success, message = message });
         }
 
         [Authorize]
         [HttpGet]
         [Route("GetOwnedEvents")]
-        public dynamic GetOwnedEvents(Event evnt)
+        public async Task<IActionResult> GetOwnedEvents([FromQuery] Event evnt)
         {
-            bool success = true;
-            string message = "success";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success) return Unauthorized(token);
 
             User _user = token.result;
 
-            List<EventRetrievalModel> result = new List<EventRetrievalModel>();
             try
             {
-                List<Event> _events = new List<Event>();
-                if (evnt.IsActive == true) 
+                List<Event> _events;
+                if (evnt.IsActive == true)
                 {
-                    _events = _activeEventQueryBP.Where(x => x.CreatedByNavigation == _user).ToList();
+                    _events = await _activeEventQueryBP.Where(x => x.CreatedByNavigation == _user).ToListAsync();
                 }
                 else
                 {
-                    _events = _listedEventQueryBP.Where(x => x.CreatedByNavigation == _user).ToList();
+                    _events = await _listedEventQueryBP.Where(x => x.CreatedByNavigation == _user).ToListAsync();
                 }
+
+                List<EventRetrievalModel> result = new List<EventRetrievalModel>();
                 foreach (Event e in _events)
                 {
                     EventRetrievalModel _event = EventRetrievalHelper.CreateRetrievalModel(_context, e);
                     result.Add(_event);
                 }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "success",
+                    count = result.Count(),
+                    data = result,
+                });
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                success = false;
-                message = e.Message; 
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    success = false,
+                    message = e.Message
+                });
             }
-            return new
-            {
-                success = success,
-                message = message,
-                count = result.Count(),
-                data = result,
-            };
         }
 
         [Authorize]
         [HttpPatch]
         [Route("SetPremium")]
-        public dynamic SetPremium()
+        public async Task<IActionResult> SetPremium()
         {
-            bool success = true;
-            string message = "success";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success)
+                return Unauthorized(new { success = false, message = token.message });
 
             User _user = token.result;
 
             try
             {
                 _user.IsPremium = !_user.IsPremium;
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
+                return Ok(new
+                {
+                    success = true,
+                    message = "success",
+                    data = _user,
+                });
             }
             catch (Exception e)
             {
-                success = false;
-                message = e.Message;
+                return StatusCode(500, new { success = false, message = e.Message });
             }
-            return new
-            {
-                success = success,
-                message = message,
-                data = _user,
-            };
         }
+
     }
 }

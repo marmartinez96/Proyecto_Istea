@@ -40,49 +40,51 @@ namespace ProdigyPlanningAPI.Controllers
         [AllowAnonymous]
         [HttpGet]
         [Route("/events")]
-        public dynamic GetEvents()
+        public async Task<IActionResult> GetEvents()
         {
-            bool success = true;
-            string message = "Success";
-            List<EventRetrievalModel> result = new List<EventRetrievalModel>();
             try
             {
-                //List<Event> _result = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Where(x=> x.IsDeleted == false).OrderBy(x=> x.Date).ToList();
-                List<Event> _result = _listedEventQueryBP.OrderBy(x => x.Date).OrderBy(x=> x.IsFeatured).ToList();
-                foreach (Event e in _result)
+                var result = new List<EventRetrievalModel>();
+                var events = await _listedEventQueryBP.OrderBy(x => x.Date).ThenBy(x => x.IsFeatured).ToListAsync();
+
+                foreach (var e in events)
                 {
-                    EventRetrievalModel eventResult = EventRetrievalHelper.CreateRetrievalModel(_context, e);
+                    var eventResult = EventRetrievalHelper.CreateRetrievalModel(_context, e);
                     result.Add(eventResult);
                 }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Success",
+                    count = result.Count,
+                    result = result
+                });
             }
             catch (Exception e)
             {
-                success = false;
-                message = e.Message;
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = e.Message
+                });
             }
-
-            return new
-            {
-                success = success,
-                message = message,
-                count = result.Count(),
-                result = result
-            };
         }
 
         [AllowAnonymous]
         [HttpGet]
         [Route("GetFeatured")]
-        public dynamic GetFeatured()
+        public async Task<IActionResult> GetFeatured()
         {
             bool success = true;
             string message = "Success";
             List<EventRetrievalModel> result = new List<EventRetrievalModel>();
+
             try
             {
-                List<Event> _events = _activeEventQueryBP.Where(x=> x.IsFeatured == true).ToList();
-                
-                foreach(Event e in _events)
+                List<Event> _events = await _activeEventQueryBP.Where(x => x.IsFeatured == true).ToListAsync();
+
+                foreach (Event e in _events)
                 {
                     result.Add(EventRetrievalHelper.CreateRetrievalModel(_context, e));
                 }
@@ -91,38 +93,40 @@ namespace ProdigyPlanningAPI.Controllers
             {
                 success = false;
                 message = e.Message;
+                return StatusCode(500, new { success = success, message = message });
             }
 
-            return new
+            return Ok(new
             {
                 success = success,
                 message = message,
                 count = result.Count(),
                 result = result
-            };
+            });
         }
 
         [AllowAnonymous]
         [HttpGet]
         [Route("GetById")]
-        public dynamic GetEventById(Event evnt)
+        public async Task<IActionResult> GetEventById(Event evnt)
         {
             bool success = true;
             string message = "Success";
             EventRetrievalModel result = null;
             try
             {
-                if(evnt.Id == null || evnt.Id <= 0)
+                if (evnt.Id == null || evnt.Id <= 0)
                 {
-                    throw new Exception("Debe enviar un numero id valido");
+                    return BadRequest(new { success = false, message = "Debe enviar un numero id valido" });
                 }
-                Event _event = _activeEventQueryBP.FirstOrDefault(x => x.Id == evnt.Id);
-                if (_event == null)
-                {
-                    throw new Exception("No se encontro ese evento en la base de datos");
-                }
-                result = EventRetrievalHelper.CreateRetrievalModel(_context, _event);
                 
+                Event _event = await _activeEventQueryBP.FirstOrDefaultAsync(x => x.Id == evnt.Id);
+                if (evnt.Id == null)
+                {
+                    return NotFound(new { success = false, message = "No se encontró ese evento en la base de datos" });
+                }
+
+                result = EventRetrievalHelper.CreateRetrievalModel(_context, _event);
             }
             catch (Exception e)
             {
@@ -130,12 +134,12 @@ namespace ProdigyPlanningAPI.Controllers
                 message = e.Message;
             }
 
-            return new
+            return Ok(new
             {
                 success = success,
                 message = message,
                 result = result
-            };
+            });
         }
 
         //
@@ -144,41 +148,52 @@ namespace ProdigyPlanningAPI.Controllers
         [AllowAnonymous]
         [HttpGet]
         [Route("GetByFilters")]
-        public dynamic GetByfilter(FilterEventModel filter)
+        public async Task<IActionResult> GetByfilter(FilterEventModel filter)
         {
             bool success = true;
             string message = "Success";
             List<EventRetrievalModel> result = new List<EventRetrievalModel>();
             try
             {
-                IQueryable<Event> query = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Include(x=> x.Banner).Where(x=> x.IsDeleted == false);
+                IQueryable<Event> query = _context.Events
+                    .Include(x => x.CreatedByNavigation)
+                    .Include(x => x.Categories)
+                    .Include(x => x.Banner)
+                    .Where(x => x.IsDeleted == false);
+
                 if (filter.Name != null)
                 {
-                    query = query.Where(x=> x.IsDeleted == false).Where(x => x.Name == filter.Name);
+                    query = query.Where(x => x.Name == filter.Name);
                 }
+
                 if (filter.CategoryId != null)
                 {
-                    Category _cat = _listedCategoryQueryBP.FirstOrDefault(x => x.Id == filter.CategoryId);
+                    Category _cat = await _listedCategoryQueryBP.FirstOrDefaultAsync(x => x.Id == filter.CategoryId);
                     if (_cat == null)
                     {
-                        throw new Exception("La categoria que intenta buscar no existe");
+                        return NotFound(new { success = false, message = "La categoria que intenta buscar no existe" });
                     }
-                    query = query.Where(x => x.IsDeleted == false).Where(x => x.Categories.Contains(_cat));
+                    query = query.Where(x => x.Categories.Contains(_cat));
                 }
+                
                 if (filter.FromDate != DateOnly.MinValue)
                 {
-                    query = query.Where(x=> x.Date>= filter.FromDate);
+                    query = query.Where(x => x.Date >= filter.FromDate);
                 }
-                if (filter.ToDate!= DateOnly.MaxValue) 
+
+                if (filter.ToDate != DateOnly.MaxValue)
                 {
-                    query = query.Where(x=> x.Date<= filter.ToDate);
+                    query = query.Where(x => x.Date <= filter.ToDate);
                 }
+
                 if (filter.IsActive == true)
                 {
                     query = query.Where(x => x.IsActive == true);
                 }
 
-                foreach (Event e in query.ToList())
+                var events = await query.ToListAsync();
+
+                foreach (Event e in events)
                 {
                     result.Add(EventRetrievalHelper.CreateRetrievalModel(_context, e));
                 }
@@ -188,13 +203,13 @@ namespace ProdigyPlanningAPI.Controllers
                 success = false;
                 message = e.Message;
             }
-            return new
+            return Ok(new
             {
                 success = success,
                 message = message,
-                count = result.Count(),
+                count = result.Count,
                 result = result
-            };
+            });
         }
 
         ///
@@ -203,7 +218,7 @@ namespace ProdigyPlanningAPI.Controllers
         [AllowAnonymous]
         [HttpGet]
         [Route("GetByPeriod")]
-        public dynamic GetEventByPeriod(PeriodModel? model)
+        public async Task<IActionResult> GetEventByPeriod(PeriodModel? model)
         {
             bool success = true;
             string message = "Success";
@@ -220,10 +235,10 @@ namespace ProdigyPlanningAPI.Controllers
                 DateOnly? firstDayPeriod = cdPeriodToDateTime(cdPeriod);
                 DateOnly? lastDayPeriod = cdPeriodToDateTime(cdPeriod).AddMonths(1).AddDays(-1);
 
-                List<Event> _events = _listedEventQueryBP.
-                    Where(x => x.Date >= firstDayPeriod).
-                    Where(x=> x.Date <= lastDayPeriod).
-                    ToList();
+                List<Event> _events = await _listedEventQueryBP
+                    .Where(x => x.Date >= firstDayPeriod)
+                    .Where(x => x.Date <= lastDayPeriod)
+                    .ToListAsync();
 
                 foreach (Event e in _events)
                 {
@@ -232,40 +247,37 @@ namespace ProdigyPlanningAPI.Controllers
             }
             catch (Exception e)
             {
-                success = false;
-                message = e.Message;
-                int count = result.Count();
-                result = result;
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = e.Message,
+                    count = result.Count,
+                    result = result
+                });
             }
-            return new
+            return Ok(new
             {
                 success = success,
                 message = message,
                 count = result.Count(),
                 result = result
-            };
+            });
         }
 
         [Authorize]
         [HttpPost]
         [Route("Add")]
-        public dynamic AddEvent(AddEventModel evnt)
+        public async Task<IActionResult> AddEventAsync(AddEventModel evnt)
         {
-            bool success = true;
-            string message = "";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success) return Unauthorized(token);
 
             User user = token.result;
 
             if (user.Roles != "[ROLE_ORGANIZER]" && user.Roles != "[ROLE_ADMIN]")
             {
-                return new
-                {
-                    success = false,
-                    message = "Necesita permisos de organizador para utilizar este recurso",
-                };
+                return Forbid("Necesita permisos de organizador para utilizar este recurso");
             }
             try
             {
@@ -273,134 +285,161 @@ namespace ProdigyPlanningAPI.Controllers
                 int currentYear = DateTime.Now.Year;
                 DateTime firstDayOfMonth = new DateTime(currentYear, currentMonth, 1);
                 DateTime lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddTicks(-1);
-                int userMonthlyEventCount = _activeEventQueryBP.Where(x => x.CreatedByNavigation == user).Where(x=> x.CreatedAt >= firstDayOfMonth).Where(x=> x.CreatedAt <= lastDayOfMonth).Count();
+                int userMonthlyEventCount = await _activeEventQueryBP
+                    .Where(x => x.CreatedByNavigation == user)
+                    .Where(x => x.CreatedAt >= firstDayOfMonth)
+                    .Where(x => x.CreatedAt <= lastDayOfMonth)
+                    .CountAsync();
 
                 if (user.IsPremium == false && userMonthlyEventCount > 3)
                 {
-                    throw new Exception("Se alcanzo el limite de eventos creados para usuarios gratuitos");
+                    return BadRequest("Se alcanzó el límite de eventos creados para usuarios gratuitos");
                 }
-                if (evnt.Name == null || evnt.Name.Trim() == "")
+                if (string.IsNullOrWhiteSpace(evnt.Name))
                 {
-                    throw new Exception("El campo nombre no puede estar vacio");
+                    return BadRequest("El campo nombre no puede estar vacío");
                 }
-                if (evnt.Location == null || evnt.Location.Trim() == "")
+                if (string.IsNullOrWhiteSpace(evnt.Location))
                 {
-                    throw new Exception("El campo ubicacion no puede estar vacio");
+                    return BadRequest("El campo ubicación no puede estar vacío");
                 }
                 if (evnt.Date == DateOnly.MinValue)
                 {
-                    throw new Exception("El campo fecha no puede estar vacio");
+                    return BadRequest("El campo fecha no puede estar vacío");
                 }
                 if (evnt.Time == TimeOnly.MinValue)
                 {
-                    throw new Exception("El campo horario no puede estar vacio");
+                    return BadRequest("El campo horario no puede estar vacío");
                 }
                 if (evnt.CategoryId == null)
                 {
-                    throw new Exception("El campo categoria no puede estar vacio");
+                    return BadRequest("El campo categoría no puede estar vacío");
                 }
 
-                Event _event = new Event();
-                _event.Name = evnt.Name;
-                _event.Location = evnt.Location;
-                _event.Date= evnt.Date;
-                _event.Time= evnt.Time;
-                _event.Description = evnt.Description;
-                _event.CreatedBy= user.Id;
-                _event.CreatedByNavigation = user;
-                _event.Duration = evnt.Duration;
+                Event _event = new Event
+                {
+                    Name = evnt.Name,
+                    Location = evnt.Location,
+                    Date = evnt.Date,
+                    Time = evnt.Time,
+                    Description = evnt.Description,
+                    CreatedBy = user.Id,
+                    CreatedByNavigation = user,
+                    Duration = evnt.Duration
+                };
                 user.Events.Add(_event);
 
-                Category _cat = _listedCategoryQueryBP.FirstOrDefault(x => x.Id == evnt.CategoryId);
-                if(_cat == null )
+                Category _cat = await _listedCategoryQueryBP
+                    .FirstOrDefaultAsync(x => x.Id == evnt.CategoryId);
+                if (_cat == null)
                 {
-                    throw new Exception("No se encontro la categoria con id:"+evnt.CategoryId);
+                    return NotFound("No se encontró la categoría con id:" + evnt.CategoryId);
                 }
 
                 _event.Categories.Add(_cat);
                 _cat.Events.Add(_event);
                 _context.Events.Add(_event);
-                _context.SaveChanges();
-                message = "Se ha creado el evento " + _event.Name;
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Se ha creado el evento " + _event.Name
+                });
             }
             catch (Exception e)
             {
-                success = false;
-                message = e.Message;
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    success = false,
+                    message = "Error interno del servidor",
+                    error = e.Message
+                });
             }
-            return new
-            {
-                success = success,
-                message = message,
-            };
         }
+
+
 
         [Authorize]
         [HttpPatch]
         [Route("Edit")]
-        public dynamic EditEvent(ChangeEventModel changeEventModel)
+        public async Task<IActionResult> EditEventAsync(ChangeEventModel changeEventModel)
         {
-            bool success = true;
-            string message = "";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success)
+            {
+                return Unauthorized(new { success = false, message = "Token inválido" });
+            }
 
             User user = token.result;
 
             if (user.Roles != "[ROLE_ORGANIZER]" && user.Roles != "[ROLE_ADMIN]")
             {
-                return new
-                {
-                    success = false,
-                    message = "Necesita permisos de organizador para utilizar este recurso",
-                };
+                return Forbid("Necesita permisos de organizador para utilizar este recurso");
             }
+
             Event _event = null;
             try
             {
-                _event = _listedEventQueryBP.FirstOrDefault(c => c.Id == changeEventModel.Id);
+                _event = await _listedEventQueryBP.FirstOrDefaultAsync(c => c.Id == changeEventModel.Id);
                 if (_event == null)
                 {
-                    throw new Exception("El evento que desea modificar no existe");
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "El evento que desea modificar no existe"
+                    });
                 }
+
                 if (_event.CreatedByNavigation != user)
                 {
-                    throw new Exception("El evento solo puede ser modificado por su creador");
+                    return Forbid("El evento solo puede ser modificado por su creador");
                 }
-                if(changeEventModel.NewName != null && changeEventModel.NewName != _event.Name) { _event.Name = changeEventModel.NewName; }
-                if(changeEventModel.NewDescription != null && changeEventModel.NewDescription != _event.Description) { _event.Description = changeEventModel.NewDescription;}
-                if(changeEventModel.NewDate != DateOnly.MinValue && changeEventModel.NewDate != _event.Date) { _event.Date = changeEventModel.NewDate;}
-                if(changeEventModel.NewTime != TimeOnly.MinValue && changeEventModel.NewTime != _event.Time) { _event.Time = changeEventModel.NewTime;}
-                if(changeEventModel.NewLocation != null && changeEventModel.NewLocation != _event.Location) { _event.Location = changeEventModel.NewLocation;}
-                if(changeEventModel.NewDuration != null && changeEventModel.NewDuration != _event.Duration) { _event.Duration = changeEventModel.NewDuration;}
-                if(changeEventModel.NewCategoryId != null)
+                
+                if (changeEventModel.NewName != null && changeEventModel.NewName != _event.Name) { _event.Name = changeEventModel.NewName; }
+                if (changeEventModel.NewDescription != null && changeEventModel.NewDescription != _event.Description) { _event.Description = changeEventModel.NewDescription; }
+                if (changeEventModel.NewDate != DateOnly.MinValue && changeEventModel.NewDate != _event.Date) { _event.Date = changeEventModel.NewDate; }
+                if (changeEventModel.NewTime != TimeOnly.MinValue && changeEventModel.NewTime != _event.Time) { _event.Time = changeEventModel.NewTime; }
+                if (changeEventModel.NewLocation != null && changeEventModel.NewLocation != _event.Location) { _event.Location = changeEventModel.NewLocation; }
+                if (changeEventModel.NewDuration != null && changeEventModel.NewDuration != _event.Duration) { _event.Duration = changeEventModel.NewDuration; }
+
+                if (changeEventModel.NewCategoryId != null)
                 {
-                    Category _cat = _listedCategoryQueryBP.FirstOrDefault(x => x.Id == changeEventModel.NewCategoryId);
+                    Category _cat = await _listedCategoryQueryBP.FirstOrDefaultAsync(x => x.Id == changeEventModel.NewCategoryId);
                     if (_cat == null)
                     {
-                        throw new Exception("No se encontro la categoria con id: " + changeEventModel.NewCategoryId);
+                        return NotFound(new
+                        {
+                            success = false,
+                            message = "No se encontró la categoría con id: " + changeEventModel.NewCategoryId
+                        });
                     }
+
                     if (!_event.Categories.Contains(_cat))
                     {
                         _event.Categories.Add(_cat);
                         _cat.Events.Add(_event);
                     }
                 }
-                _context.SaveChanges();
-                message = "Se ha actualizado el evento "+ _event.Name;
+
+                await _context.SaveChangesAsync();
+                return Ok(new
+                {
+                    success = true,
+                    message = "Se ha actualizado el evento " + _event.Name,
+                    data = EventRetrievalHelper.CreateRetrievalModel(_context, _event)
+                });
             }
             catch (Exception e)
             {
-                success = false;
-                message = e.Message;
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    success = false,
+                    message = "Error interno del servidor",
+                    error = e.Message
+                });
             }
-            return new
-            {
-                success = success,
-                message = message,
-                data = EventRetrievalHelper.CreateRetrievalModel(_context, _event)
-            };
         }
 
         [Authorize]
@@ -468,54 +507,67 @@ namespace ProdigyPlanningAPI.Controllers
         [Authorize]
         [HttpDelete]
         [Route("Delete")]
-        public dynamic DeleteEvent(Event evnt)
+        public async Task<IActionResult> DeleteEventAsync(Event evnt)
         {
-            bool success = true;
-            string message = "";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success)
+            {
+                return Unauthorized(new { success = false, message = "Token inválido" });
+            }
 
             User user = token.result;
 
             if (user.Roles != "[ROLE_ORGANIZER]" && user.Roles != "[ROLE_ADMIN]")
             {
-                return new
-                {
-                    success = false,
-                    message = "Necesita permisos de organizador para utilizar este recurso",
-                };
+                return Forbid("Necesita permisos de organizador para utilizar este recurso");
             }
+
             try
             {
-                if(evnt.Id == 0)
+                if (evnt.Id == 0)
                 {
-                    throw new Exception("Es obligatorio proveer un id para identificar el evento a eliminar");
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Es obligatorio proveer un id para identificar el evento a eliminar"
+                    });
                 }
-                Event _event = _listedEventQueryBP.FirstOrDefault(c => c.Id == evnt.Id);
+
+                Event _event = await _listedEventQueryBP.FirstOrDefaultAsync(c => c.Id == evnt.Id);
                 if (_event == null)
                 {
-                    throw new Exception("El evento que desea eliminar no existe");
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "El evento que desea eliminar no existe"
+                    });
                 }
+
                 if (_event.CreatedByNavigation != user)
                 {
-                    throw new Exception("El evento solo puede ser eliminado por su creador");
+                    return Forbid("El evento solo puede ser eliminado por su creador");
                 }
+                
                 _event.IsDeleted = true;
                 _event.IsFeatured = false;
-                _context.SaveChanges();
-                message = "Se ha eliminado el evento " + _event.Name;
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Se ha eliminado el evento " + _event.Name
+                });
             }
             catch (Exception e)
             {
-                success = false;
-                message = e.Message;
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    success = false,
+                    message = "Error interno del servidor",
+                    error = e.Message
+                });
             }
-            return new
-            {
-                success = success,
-                message = message,
-            };
         }
 
         [Authorize]
