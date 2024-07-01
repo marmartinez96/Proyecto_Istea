@@ -267,6 +267,7 @@ namespace ProdigyPlanningAPI.Controllers
                     message = "Necesita permisos de organizador para utilizar este recurso",
                 };
             }
+            Event _event = new Event();
             try
             {
                 int currentMonth = DateTime.Now.Month;
@@ -300,7 +301,6 @@ namespace ProdigyPlanningAPI.Controllers
                     throw new Exception("El campo categoria no puede estar vacio");
                 }
 
-                Event _event = new Event();
                 _event.Name = evnt.Name;
                 _event.Location = evnt.Location;
                 _event.Date= evnt.Date;
@@ -331,6 +331,7 @@ namespace ProdigyPlanningAPI.Controllers
             return new
             {
                 success = success,
+                data = EventRetrievalHelper.CreateRetrievalModel(_context, _event),
                 message = message,
             };
         }
