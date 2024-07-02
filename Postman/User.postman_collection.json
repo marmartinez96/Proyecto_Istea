@@ -1,0 +1,165 @@
+{
+	"info": {
+		"_postman_id": "f4041c6b-4328-4a7a-a681-7dc46562bca9",
+		"name": "User",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "27554239"
+	},
+	"item": [
+		{
+			"name": "GetOwnedEvents",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiYjdkOGY4ODktMGJjNS00YzlmLWFjMmYtMjAwYmVlNGNlMjU4IiwiaWF0IjoiMTcvMDUvMjAyNCAxOToyOTowMyIsImlkIjoiMTAwMiIsImV4cCI6MTcxNTk5NTc0MywiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.BcXzYiRRXWnHtxZfGItkQYnztFMFL9UGZNqsgP8czW0"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/User/GetOwnedEvents"
+			},
+			"response": []
+		},
+		{
+			"name": "GetRoles",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiYTgwYTkxODAtMDM5Zi00YWM5LTk1ZGMtZjc2Y2E2NDk0MTliIiwiaWF0IjoiMTAvMDUvMjAyNCAxNTowODo0MyIsImlkIjoiMSIsImV4cCI6MTcxNTM3NTMyMywiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.49lF5TQ2LxYqKKbd7gb9BZ18qMdV19_XQVCM938Ks24"
+					}
+				],
+				"url": "http://localhost:5276/User/GetRoles"
+			},
+			"response": []
+		},
+		{
+			"name": "GetUSer",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiMDUyOTNmMTQtYTQ5Ni00ODE4LTg5ZTEtNWEzZjc4MWM4NGMwIiwiaWF0IjoiMjIvMDUvMjAyNCAyMjoyODo1OSIsImlkIjoiMSIsImV4cCI6MTcxNjQzODUzOSwiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.au1DJNn2Op3FIS-mqKCbL_6KICK_BUPoRR5-WYT6g_8"
+					}
+				],
+				"url": "http://localhost:5276/User/GetUser"
+			},
+			"response": []
+		},
+		{
+			"name": "GetIsPremium",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:5276/User/IsPremium"
+			},
+			"response": []
+		},
+		{
+			"name": "Update Password",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiYTgwYTkxODAtMDM5Zi00YWM5LTk1ZGMtZjc2Y2E2NDk0MTliIiwiaWF0IjoiMTAvMDUvMjAyNCAxNTowODo0MyIsImlkIjoiMSIsImV4cCI6MTcxNTM3NTMyMywiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.49lF5TQ2LxYqKKbd7gb9BZ18qMdV19_XQVCM938Ks24"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"OldPassword\": \"123456\",\r\n    \"ConfirmPassword\": \"123456\",\r\n    \"NewPassword\": \"12345\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/User/UpdatePassword"
+			},
+			"response": []
+		},
+		{
+			"name": "Update User",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiYTgwYTkxODAtMDM5Zi00YWM5LTk1ZGMtZjc2Y2E2NDk0MTliIiwiaWF0IjoiMTAvMDUvMjAyNCAxNTowODo0MyIsImlkIjoiMSIsImV4cCI6MTcxNTM3NTMyMywiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.49lF5TQ2LxYqKKbd7gb9BZ18qMdV19_XQVCM938Ks24"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Name\" : \"Manuel\",\r\n    \"Surname\": \"Lopez\",\r\n    \"Email\": \"manuelagustinmartinez@hotmail.com\",\r\n    \"Roles\": \"Organizador\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/User/UpdateUser"
+			},
+			"response": []
+		},
+		{
+			"name": "SetPremium",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiNzk0NWQ0MzItMWQ3MS00N2QxLWJjZjctYTQ4MDAzMTdjNmU4IiwiaWF0IjoiMjAvMDUvMjAyNCAxOToxODozNiIsImlkIjoiMSIsImV4cCI6MTcxNjI1NDMxNiwiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.AHXco_z406JNqh_jfhEgGO7WDmgsgnLcgHrIuNvxQ18"
+					}
+				],
+				"url": "http://localhost:5276/User/SetPremium"
+			},
+			"response": []
+		},
+		{
+			"name": "RecoverPassword",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"manuel.martinez@istea.com.ar\",\r\n    \"QuestionId\": \"1\",\r\n    \"Answer\": \"Juan\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/User/RecoverPassword"
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteUser",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiYWZiNTM4YzctYmE5MS00M2Y1LWIzMTItNDY3YTQxZjBkOTA0IiwiaWF0IjoiMTAvMDUvMjAyNCAxNTozMDoxMSIsImlkIjoiMSIsImV4cCI6MTcxNTM3NjYxMSwiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.PUNpgloArguY7_uZU5b9HOjD5DkFi4yhGOgcOgqw-7A"
+					}
+				],
+				"url": "http://localhost:5276/User/DeleteUser"
+			},
+			"response": []
+		}
+	]
+}

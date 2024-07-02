@@ -1,0 +1,346 @@
+{
+	"info": {
+		"_postman_id": "f5d29eea-e6da-4cd3-bd77-a565c3a4851b",
+		"name": "Events",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "27554239"
+	},
+	"item": [
+		{
+			"name": "GetEvents",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:5276/events"
+			},
+			"response": []
+		},
+		{
+			"name": "GetById",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\":\"1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Event/GetById"
+			},
+			"response": []
+		},
+		{
+			"name": "GetByPeriod",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"cd\":\"042026\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Event/GetByPeriod"
+			},
+			"response": []
+		},
+		{
+			"name": "GetByFilters",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Name\": \"Lollapalooza\",\r\n    \"CategoryId\": \"1\",\r\n    \"FromDate\": \"17/06/2024\",\r\n    \"ToDate\": \"23/07/2024\",\r\n    \"IsActive\": \"FALSE\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Event/GetByfilters"
+			},
+			"response": []
+		},
+		{
+			"name": "GetFeatured",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:5276/Event/GetFeatured"
+			},
+			"response": []
+		},
+		{
+			"name": "AddEvent",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiNzk0NWQ0MzItMWQ3MS00N2QxLWJjZjctYTQ4MDAzMTdjNmU4IiwiaWF0IjoiMjAvMDUvMjAyNCAxOToxODozNiIsImlkIjoiMSIsImV4cCI6MTcxNjI1NDMxNiwiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.AHXco_z406JNqh_jfhEgGO7WDmgsgnLcgHrIuNvxQ18"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Name\": \"Lollapalooza 3000\",\r\n    \"Location\": \"Centro Cultural Javier Milei\",\r\n    \"Date\": \"17/12/2077\",\r\n    \"Time\":\"13:00:00\",\r\n    \"Duration\": \"8\",\r\n    \"Description\":\"Festival de musica\",\r\n    \"CategoryId\": \"1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Event/Add"
+			},
+			"response": []
+		},
+		{
+			"name": "EditEvent",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiMmFiZDMwZjktNTg3Ny00NzdhLWFjNzYtZDYzYjhlMjRhNzBlIiwiaWF0IjoiMTAvMDUvMjAyNCAxNTozOTowMSIsImlkIjoiMiIsImV4cCI6MTcxNTM3NzE0MSwiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.jOigG0oMWVVZ2dkqSl0TGqcK4K5jdiG4LLiP2NHd4M0"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Id\": \"1\",\r\n    \"NewName\": \"Feria de los libros\",\r\n    \"NewDescription\": \"La primera edicion de la revolucionaria Feria de los Libros\",\r\n    \"NewDate\": \"5/5/2024\",\r\n    \"NewTime\": \"18:00:00\",\r\n    \"NewLocation\": \"Groove\",\r\n    \"NewCategoryId\": \"2\",\r\n    \"NewDuration\": \"8\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Event/Edit"
+			},
+			"response": []
+		},
+		{
+			"name": "SetFeatured",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiMWQ3YWQyYzAtMGZjNS00MzdmLWIwM2ItZTM0OWFkNzBkYTg5IiwiaWF0IjoiMjAvMDUvMjAyNCAyMjo1NTo0NiIsImlkIjoiMSIsImV4cCI6MTcxNjI2NzM0NiwiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.Rx-NeHTngyY0hgsvpiX9MdiVxXX8NJo5Q0y_aGyTcyc"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"13\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Event/SetFeatured"
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteEvent",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiNzk0NWQ0MzItMWQ3MS00N2QxLWJjZjctYTQ4MDAzMTdjNmU4IiwiaWF0IjoiMjAvMDUvMjAyNCAxOToxODozNiIsImlkIjoiMSIsImV4cCI6MTcxNjI1NDMxNiwiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.AHXco_z406JNqh_jfhEgGO7WDmgsgnLcgHrIuNvxQ18"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"9\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5276/Event/Delete",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5276",
+					"path": [
+						"Event",
+						"Delete"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetBanner",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"5\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Event/GetBanner"
+			},
+			"response": []
+		},
+		{
+			"name": "AddBanner",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiMDUyOTNmMTQtYTQ5Ni00ODE4LTg5ZTEtNWEzZjc4MWM4NGMwIiwiaWF0IjoiMjIvMDUvMjAyNCAyMjoyODo1OSIsImlkIjoiMSIsImV4cCI6MTcxNjQzODUzOSwiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.au1DJNn2Op3FIS-mqKCbL_6KICK_BUPoRR5-WYT6g_8"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "id",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "formFile",
+							"type": "file",
+							"src": "/C:/Users/Manuel/Pictures/Captura2.PNG"
+						}
+					]
+				},
+				"url": "http://localhost:5276/Event/AddBanner"
+			},
+			"response": []
+		},
+		{
+			"name": "RemoveBanner",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiNzFjODkzNGItN2Q5OC00MjA4LTkzZWQtMGIzMWNkODg3Y2Y0IiwiaWF0IjoiMTYvNS8yMDI0IDEzOjA0OjMxIiwiaWQiOiIxMDAyIiwiZXhwIjoxNzE1ODg2MjcxLCJpc3MiOiJodHRwczovL215LXJlc291cmNlLmNvbSIsImF1ZCI6Imh0dHBzOi8vbXktcmVzb3VyY2UuY29tIn0.qny6I0pD3OuclPJiPExpGx2EWwfZtoE02XvEzeNgEKM"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\":\"4\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Event/RemoveBanner"
+			},
+			"response": []
+		},
+		{
+			"name": "AddCategory",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiYjdkOGY4ODktMGJjNS00YzlmLWFjMmYtMjAwYmVlNGNlMjU4IiwiaWF0IjoiMTcvMDUvMjAyNCAxOToyOTowMyIsImlkIjoiMTAwMiIsImV4cCI6MTcxNTk5NTc0MywiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.BcXzYiRRXWnHtxZfGItkQYnztFMFL9UGZNqsgP8czW0"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\":\"1\",\r\n    \"CategoryIs\":\"1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Event/AddCategory"
+			},
+			"response": []
+		},
+		{
+			"name": "RemoveCategory",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiYjdkOGY4ODktMGJjNS00YzlmLWFjMmYtMjAwYmVlNGNlMjU4IiwiaWF0IjoiMTcvMDUvMjAyNCAxOToyOTowMyIsImlkIjoiMTAwMiIsImV4cCI6MTcxNTk5NTc0MywiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.BcXzYiRRXWnHtxZfGItkQYnztFMFL9UGZNqsgP8czW0"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\":\"1\",\r\n    \"CategoryId\":\"1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Event/RemoveCategory"
+			},
+			"response": []
+		},
+		{
+			"name": "ReplaceCategory",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQcm9kaWd5UGxhbm5pbmdBUElTdWJqZWN0IiwianRpIjoiMjk1MmZlOWQtOWVjMC00ODAwLWI0OTgtZTY4MDkzNGY1YWQxIiwiaWF0IjoiMjEvMDUvMjAyNCAyMDoxNToyMyIsImlkIjoiMSIsImV4cCI6MTcxNjM0NDEyMywiaXNzIjoiaHR0cHM6Ly9teS1yZXNvdXJjZS5jb20iLCJhdWQiOiJodHRwczovL215LXJlc291cmNlLmNvbSJ9.rAHGi3tA4YWOmw9pINoeXsfXj2FJOXsP4crrvS4NcFI"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"EventId\":\"11\",\r\n    \"ReplaceId\":\"1\",\r\n    \"ReplacementId\":\"2\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5276/Event/ReplaceCategory"
+			},
+			"response": []
+		}
+	]
+}
