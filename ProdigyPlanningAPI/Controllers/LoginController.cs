@@ -123,6 +123,8 @@ namespace ProdigyPlanningAPI.Controllers
             
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        
+
 
         [AllowAnonymous]
         [HttpPost]

@@ -52,6 +52,7 @@ namespace ProdigyPlanningAPI.Controllers
             });
         }
 
+
         [Authorize]
         [HttpGet]
         [Route("GetRoles")]

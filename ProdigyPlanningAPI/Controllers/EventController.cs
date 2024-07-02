@@ -105,6 +105,7 @@ namespace ProdigyPlanningAPI.Controllers
             });
         }
 
+
         [AllowAnonymous]
         [HttpGet]
         [Route("GetById")]
