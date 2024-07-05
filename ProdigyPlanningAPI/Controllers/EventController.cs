@@ -15,6 +15,7 @@ using System.Security.Claims;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
+using System.Globalization;
 
 namespace ProdigyPlanningAPI.Controllers
 {
@@ -141,6 +142,7 @@ namespace ProdigyPlanningAPI.Controllers
         //
         //Este metodo no puede hacer uso de los queryBP porque necesita modificar los filtros dinamicamente y no queremos alterar los BP a nivel clase.
         //
+        /*
         [AllowAnonymous]
         [HttpGet]
         [Route("GetByFilters")]
@@ -196,6 +198,82 @@ namespace ProdigyPlanningAPI.Controllers
                 result = result
             };
         }
+        */
+
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("GetByFilters")]
+        public dynamic GetByfilter([FromQuery]string? name, [FromQuery] int? category, [FromQuery] int fromDate, [FromQuery] int toDate, [FromQuery] bool isActive = false)
+        {
+            FilterEventModel filter = new FilterEventModel();
+            filter.Name = name;
+            filter.CategoryId= category;
+            filter.IsActive = isActive;
+
+            if (fromDate != 0)
+            {
+                DateTime _fromDate = DateTime.ParseExact(fromDate.ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
+                DateOnly __fromDate = DateOnly.FromDateTime(_fromDate);
+                filter.FromDate = __fromDate;
+            }
+            if (toDate != 0)
+            {
+                DateTime _toDate = DateTime.ParseExact(toDate.ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
+                DateOnly __toDate = DateOnly.FromDateTime(_toDate);
+                filter.ToDate = __toDate;
+            }
+
+            bool success = true;
+            string message = "Success";
+            List<EventRetrievalModel> result = new List<EventRetrievalModel>();
+            try
+            {
+                IQueryable<Event> query = _context.Events.Include(x => x.CreatedByNavigation).Include(x => x.Categories).Include(x => x.Banner).Where(x => x.IsDeleted == false);
+                if (filter.Name != null)
+                {
+                    query = query.Where(x => x.IsDeleted == false).Where(x => x.Name == filter.Name);
+                }
+                if (filter.CategoryId != null)
+                {
+                    Category _cat = _listedCategoryQueryBP.FirstOrDefault(x => x.Id == filter.CategoryId);
+                    if (_cat == null)
+                    {
+                        throw new Exception("La categoria que intenta buscar no existe");
+                    }
+                    query = query.Where(x => x.IsDeleted == false).Where(x => x.Categories.Contains(_cat));
+                }
+                if (filter.FromDate != DateOnly.MinValue)
+                {
+                    query = query.Where(x => x.Date >= filter.FromDate);
+                }
+                if (filter.ToDate != DateOnly.MaxValue)
+                {
+                    query = query.Where(x => x.Date <= filter.ToDate);
+                }
+                if (filter.IsActive == true)
+                {
+                    query = query.Where(x => x.IsActive == true);
+                }
+
+                foreach (Event e in query.ToList())
+                {
+                    result.Add(EventRetrievalHelper.CreateRetrievalModel(_context, e));
+                }
+            }
+            catch (Exception e)
+            {
+                success = false;
+                message = e.Message;
+            }
+            return new
+            {
+                success = success,
+                message = message,
+                count = result.Count(),
+                result = result
+            };
+        }
+
 
         ///
         ///Estoy seguro que aca faltan un monton de validaciones
