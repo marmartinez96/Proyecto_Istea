@@ -167,7 +167,7 @@ namespace ProdigyPlanningAPI.Controllers
         [Authorize]
         [HttpPatch]
         [Route("Edit")]
-        public async Task<IActionResult> EditCategoryAsync(ChangeCategoryModel changeCategoryModel)
+        public async Task<IActionResult> EditCategory(ChangeCategoryModel changeCategoryModel)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);

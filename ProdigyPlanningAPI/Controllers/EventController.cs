@@ -268,7 +268,7 @@ namespace ProdigyPlanningAPI.Controllers
         [Authorize]
         [HttpPost]
         [Route("Add")]
-        public async Task<IActionResult> AddEventAsync(AddEventModel evnt)
+        public async Task<IActionResult> AddEvent(AddEventModel evnt)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
@@ -280,7 +280,6 @@ namespace ProdigyPlanningAPI.Controllers
             {
                 return Forbid("Necesita permisos de organizador para utilizar este recurso");
             }
-            Event _event = new Event();
             try
             {
                 int currentMonth = DateTime.Now.Month;
@@ -318,7 +317,6 @@ namespace ProdigyPlanningAPI.Controllers
                     return BadRequest("El campo categoría no puede estar vacío");
                 }
 
-<<<<<<< HEAD
                 Event _event = new Event
                 {
                     Name = evnt.Name,
@@ -330,16 +328,6 @@ namespace ProdigyPlanningAPI.Controllers
                     CreatedByNavigation = user,
                     Duration = evnt.Duration
                 };
-=======
-                _event.Name = evnt.Name;
-                _event.Location = evnt.Location;
-                _event.Date= evnt.Date;
-                _event.Time= evnt.Time;
-                _event.Description = evnt.Description;
-                _event.CreatedBy= user.Id;
-                _event.CreatedByNavigation = user;
-                _event.Duration = evnt.Duration;
->>>>>>> e62a20e8ae0b9efd2f377382cf646cf06d815321
                 user.Events.Add(_event);
 
                 Category _cat = await _listedCategoryQueryBP
@@ -369,23 +357,12 @@ namespace ProdigyPlanningAPI.Controllers
                     error = e.Message
                 });
             }
-<<<<<<< HEAD
-=======
-            return new
-            {
-                success = success,
-                data = EventRetrievalHelper.CreateRetrievalModel(_context, _event),
-                message = message,
-            };
->>>>>>> e62a20e8ae0b9efd2f377382cf646cf06d815321
         }
-
-
 
         [Authorize]
         [HttpPatch]
         [Route("Edit")]
-        public async Task<IActionResult> EditEventAsync(ChangeEventModel changeEventModel)
+        public async Task<IActionResult> EditEvent(ChangeEventModel changeEventModel)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
@@ -525,11 +502,10 @@ namespace ProdigyPlanningAPI.Controllers
             };
         }
 
-
         [Authorize]
         [HttpDelete]
         [Route("Delete")]
-        public async Task<IActionResult> DeleteEventAsync(Event evnt)
+        public async Task<IActionResult> DeleteEvent(Event evnt)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
