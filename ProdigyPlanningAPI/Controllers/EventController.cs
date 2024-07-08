@@ -444,13 +444,11 @@ namespace ProdigyPlanningAPI.Controllers
         [Authorize]
         [HttpPatch]
         [Route("SetFeatured")]
-        public dynamic SetFeatured(Event evnt)
+        public async Task<IActionResult> SetFeaturedAsync([FromBody] Event evnt)
         {
-            bool success = true;
-            string message = "";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success) return Unauthorized(new { success = false, message = "Token inválido" });
 
             User user = token.result;
             Event _event = new Event();
@@ -458,48 +456,35 @@ namespace ProdigyPlanningAPI.Controllers
             {
                 if (evnt.Id == 0)
                 {
-                    throw new Exception("Debe enviar un id para identificar al evento");
+                    return BadRequest(new { success = false, message = "Debe enviar un id para identificar al evento" });
                 }
-                _event = _activeEventQueryBP.FirstOrDefault(c => c.Id == evnt.Id);
+                _event = await _activeEventQueryBP.FirstOrDefaultAsync(c => c.Id == evnt.Id);
                 if (_event == null)
                 {
-                    throw new Exception("El evento que desea destacar no existe");
+                    return NotFound(new { success = false, message = "El evento que desea destacar no existe" });
                 }
                 if (_event.CreatedByNavigation != user)
                 {
-                    throw new Exception("El evento solo puede ser destacado por su creador");
+                    return StatusCode(StatusCodes.Status403Forbidden, new { success = false, message = "El evento solo puede ser destacado por su creador" });
                 }
                 if (!user.IsPremium)
                 {
-                    throw new Exception("Solo los usuarios premiun pueden destacar eventos");
+                    return BadRequest(new { success = false, message = "Solo los usuarios premium pueden destacar eventos" });
                 }
                 _event.IsFeatured = !_event.IsFeatured;
-                int userFeaturedEvents = _activeEventQueryBP.Where(x => x.CreatedByNavigation == user).Count();
-                if (userFeaturedEvents > 2 && _event.IsFeatured == true)
+                int userFeaturedEvents = await _activeEventQueryBP.Where(x => x.CreatedByNavigation == user).CountAsync();
+                if (userFeaturedEvents > 2 && _event.IsFeatured)
                 {
-                    throw new Exception("Solo se puede destacar un maximo de tres eventos");
+                    return BadRequest(new { success = false, message = "Solo se puede destacar un máximo de tres eventos" });
                 }
-                _context.SaveChanges();
-                if (_event.IsFeatured)
-                {
-                    message = "Se destaco el evento " + _event.Name;
-                }
-                else
-                {
-                    message = "Se quito el destacado al evento " + _event.Name;
-                }
+                await _context.SaveChangesAsync();
+                string message = _event.IsFeatured ? "Se destaco el evento " + _event.Name : "Se quito el destacado al evento " + _event.Name;
+                return Ok(new { success = true, message, data = EventRetrievalHelper.CreateRetrievalModel(_context, _event) });
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                success = false;
-                message = e.Message;
+                return StatusCode(500, new { success = false, message = e.Message });
             }
-            return new
-            {
-                success = success,
-                message = message,
-                data = EventRetrievalHelper.CreateRetrievalModel(_context, _event)
-            };
         }
 
         [Authorize]

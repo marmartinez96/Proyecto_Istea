@@ -54,42 +54,38 @@ namespace ProdigyPlanningAPI.Controllers
         [AllowAnonymous]
         [HttpGet]
         [Route("GetEvents")]
-        public dynamic GetEventsByCategory(Category category)
+        public async Task<IActionResult> GetEventsByCategory([FromBody] Category category)
         {
-            bool success = true;
-            string message = "success";
+            if (category.Id == 0)
+            {
+                return BadRequest(new { success = false, message = "Debe ingresar un id de categoria valido" });
+            }
 
-            List<EventRetrievalModel> result = new List<EventRetrievalModel>();
             try
             {
-                if(category.Id == 0)
-                {
-                    throw new Exception("Debe ingresar un id de categoria valido");
-                }
-                Category _category = _listedCategoryQueryBP.FirstOrDefault(c => c.Id == category.Id);
+                Category _category = await _listedCategoryQueryBP.FirstOrDefaultAsync(c => c.Id == category.Id);
                 if (_category == null)
                 {
-                    throw new Exception("La categoria que esta buscando no existe");
+                    return NotFound(new { success = false, message = "La categoria que esta buscando no existe" });
                 }
-                List<Event> _events = _activeEventQueryBP.Where(x => x.Categories.Contains(_category)).ToList();
+
+                List<Event> _events = await _activeEventQueryBP.Where(x => x.Categories.Contains(_category)).ToListAsync();
+
+                List<EventRetrievalModel> result = new List<EventRetrievalModel>();
                 foreach (Event e in _events)
                 {
                     EventRetrievalModel _event = EventRetrievalHelper.CreateRetrievalModel(_context, e);
                     result.Add(_event);
                 }
+
+                return Ok(new { success = true, message = "success", data = result });
             }
             catch (Exception e)
             {
-                success = false;
-                message = e.Message;
+                return StatusCode(500, new { success = false, message = e.Message });
             }
-            return new
-            {
-                success = success,
-                message = message,
-                data = result,
-            };
         }
+
 
         [Authorize]
         [HttpPost]
@@ -233,45 +229,34 @@ namespace ProdigyPlanningAPI.Controllers
         [Authorize]
         [HttpDelete]
         [Route("Delete")]
-        public dynamic DeleteCategory(Category category)
+        public async Task<IActionResult> DeleteCategory([FromBody] Category category)
         {
-            bool success = true;
-            string message = "";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success) return Unauthorized(new { success = false, message = "Token inválido" });
 
             User user = token.result;
 
             if (user.Roles != "[ROLE_ADMIN]")
             {
-                return new
-                {
-                    success = false,
-                    message = "Necesita permisos de administrador para utilizar este recurso",
-                };
+                return StatusCode(StatusCodes.Status403Forbidden, new { success = false, message = "Necesita permisos de administrador para utilizar este recurso" });
             }
+
             try
             {
-                Category _category = _listedCategoryQueryBP.FirstOrDefault(c => c.Id == category.Id);
+                Category _category = await _listedCategoryQueryBP.FirstOrDefaultAsync(c => c.Id == category.Id);
                 if (_category == null)
                 {
-                    throw new Exception("La categoria que desea eliminar no existe");
+                    return NotFound(new { success = false, message = "La categoria que desea eliminar no existe" });
                 }
-                _category.IsDeleted= true;
-                _context.SaveChanges();
-                message = "Se ha eliminado la categoria " + category.Name;
+                _category.IsDeleted = true;
+                await _context.SaveChangesAsync();
+                return Ok(new { success = true, message = "Se ha eliminado la categoria " + category.Name });
             }
             catch (Exception e)
             {
-                success = false;
-                message = e.Message;
+                return StatusCode(500, new { success = false, message = e.Message });
             }
-            return new
-            {
-                success = success,
-                message = message,
-            };
         }
     }
 }
