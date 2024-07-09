@@ -32,106 +32,96 @@ namespace ProdigyPlanningAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public dynamic GetCategories() 
+        public async Task<IActionResult> GetCategories()
         {
             bool success = true;
             string message = "Success";
             List<Category> result = null;
             try
             {
-                result = _listedCategoryQueryBP.ToList();
+                result = await _listedCategoryQueryBP.ToListAsync();
             }
             catch (Exception e)
             {
                 success = false;
                 message = e.Message;
+                return StatusCode(500, new { success = success, message = message });
             }
 
-            return new
-            {
-                success = success,
-                message = message,
-                result = result
-            };
+            return Ok(new { success = success, message = message, result = result });
         }
 
         [AllowAnonymous]
         [HttpGet]
         [Route("GetEvents")]
-        public dynamic GetEventsByCategory(Category category)
+        public async Task<IActionResult> GetEventsByCategory([FromBody] Category category)
         {
-            bool success = true;
-            string message = "success";
+            if (category.Id == 0)
+            {
+                return BadRequest(new { success = false, message = "Debe ingresar un id de categoria valido" });
+            }
 
-            List<EventRetrievalModel> result = new List<EventRetrievalModel>();
             try
             {
-                if(category.Id == 0)
-                {
-                    throw new Exception("Debe ingresar un id de categoria valido");
-                }
-                Category _category = _listedCategoryQueryBP.FirstOrDefault(c => c.Id == category.Id);
+                Category _category = await _listedCategoryQueryBP.FirstOrDefaultAsync(c => c.Id == category.Id);
                 if (_category == null)
                 {
-                    throw new Exception("La categoria que esta buscando no existe");
+                    return NotFound(new { success = false, message = "La categoria que esta buscando no existe" });
                 }
-                List<Event> _events = _activeEventQueryBP.Where(x => x.Categories.Contains(_category)).ToList();
+
+                List<Event> _events = await _activeEventQueryBP.Where(x => x.Categories.Contains(_category)).ToListAsync();
+
+                List<EventRetrievalModel> result = new List<EventRetrievalModel>();
                 foreach (Event e in _events)
                 {
                     EventRetrievalModel _event = EventRetrievalHelper.CreateRetrievalModel(_context, e);
                     result.Add(_event);
                 }
+
+                return Ok(new { success = true, message = "success", data = result });
             }
             catch (Exception e)
             {
-                success = false;
-                message = e.Message;
+                return StatusCode(500, new { success = false, message = e.Message });
             }
-            return new
-            {
-                success = success,
-                message = message,
-                data = result,
-            };
         }
+
 
         [Authorize]
         [HttpPost]
         [Route("Add")]
-        public dynamic AddCategory(Category category) 
+        public async Task<IActionResult> AddCategory(Category category)
         {
             bool success = true;
             string message = "";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success) return Unauthorized(token);
 
             User user = token.result;
 
             if (user.Roles != "[ROLE_ADMIN]")
             {
-                return new
-                {
-                    success = false,
-                    message = "Necesita permisos de administrador para utilizar este recurso",
-                };
+                return Forbid("Necesita permisos de administrador para utilizar este recurso");
             }
+
             try
             {
                 if (category.Id != 0)
                 {
-                    throw new Exception("El id debe estar vacio para que se otorgue uno en la base de datos");
+                    return BadRequest("El id debe estar vacio para que se otorgue uno en la base de datos");
                 }
-                if (category.Name == null || category.Name.Trim() == "")
+                if (string.IsNullOrWhiteSpace(category.Name))
                 {
-                    throw new Exception("No se puede crear una categoria con un nombre en blanco");
+                    return BadRequest("No se puede crear una categoria con un nombre en blanco");
                 }
-                Category _category = _listedCategoryQueryBP.FirstOrDefault(c => c.Name == category.Name);
-                if(_category != null)
+
+                Category _category = await _listedCategoryQueryBP.FirstOrDefaultAsync(c => c.Name == category.Name);
+                if (_category != null)
                 {
-                    if(category.IsDeleted == true)
+                    if (_category.IsDeleted == true)
                     {
-                        throw new Exception("Ya existe una categoria con ese nombre");
+                        return BadRequest("Ya existe una categoria con ese nombre");
                     }
                     _category.IsDeleted = false;
                 }
@@ -139,119 +129,134 @@ namespace ProdigyPlanningAPI.Controllers
                 {
                     _category = new Category();
                     _category.Name = category.Name;
-                    _context.Categories.Add(_category);
+                    await _context.Categories.AddAsync(_category);
                 }
-                _context.SaveChanges();
+
+                await _context.SaveChangesAsync();
                 message = "Se ha creado la categoria " + _category.Name;
-            }
-            catch (Exception e)
-            {
-                success= false;
-                message = e.Message;
-            }
-            return new
-            {
-                success = success,
-                message = message,
-            };
-        }
-
-        [Authorize]
-        [HttpPatch]
-        [Route("Edit")]
-        public dynamic EditCategory(ChangeCategoryModel changeCategoryModel)
-        {
-            bool success = true;
-            string message = "";
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
-
-            User user = token.result;
-
-            if (user.Roles != "[ROLE_ADMIN]")
-            {
-                return new
-                {
-                    success = false,
-                    message = "Necesita permisos de administrador para utilizar este recurso",
-                };
-            }
-
-            try
-            {
-                Category _category = _listedCategoryQueryBP.FirstOrDefault(c => c.Id == changeCategoryModel.Id);
-                if (_category == null) 
-                {
-                    throw new Exception("La categoria que desea modificar no existe");
-                }
-                if (changeCategoryModel.NewName == _category.Name)
-                {
-                    throw new Exception("El nuevo nombre coincide con el anterior");
-                }
-                if (_listedCategoryQueryBP.FirstOrDefault(c => c.Name == changeCategoryModel.NewName) != null)
-                {
-                    throw new Exception("Ya existe una categoria con ese nombre");
-                }
-                string oldName = _category.Name;
-                _category.Name = changeCategoryModel.NewName;
-                _context.SaveChanges();
-                message = "Se ha actualizado el nombre de la categoria " + oldName + " a: " + _category.Name;
             }
             catch (Exception e)
             {
                 success = false;
                 message = e.Message;
             }
-            return new
+
+            if (success)
             {
-                success = success,
-                message = message,
-            };
+                return Ok(new
+                {
+                    success = success,
+                    message = message,
+                });
+            }
+            else
+            {
+                return StatusCode(500, new
+                {
+                    success = success,
+                    message = message,
+                });
+            }
+        }
+
+
+        [Authorize]
+        [HttpPatch]
+        [Route("Edit")]
+        public async Task<IActionResult> EditCategory(ChangeCategoryModel changeCategoryModel)
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var token = AuthorizationHelper.ValidateToken(identity, _context);
+            if (!token.success) return Unauthorized(token);
+
+            User user = token.result;
+
+            if (user.Roles != "[ROLE_ADMIN]")
+            {
+                return Forbid("Necesita permisos de administrador para utilizar este recurso");
+            }
+
+            try
+            {
+                Category _category = await _listedCategoryQueryBP.FirstOrDefaultAsync(c => c.Id == changeCategoryModel.Id);
+                if (_category == null)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "La categoria que desea modificar no existe"
+                    });
+                }
+
+                if (changeCategoryModel.NewName == _category.Name)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "El nuevo nombre coincide con el anterior"
+                    });
+                }
+
+                if (await _listedCategoryQueryBP.FirstOrDefaultAsync(c => c.Name == changeCategoryModel.NewName) != null)
+                {
+                    return Conflict(new
+                    {
+                        success = false,
+                        message = "Ya existe una categoria con ese nombre"
+                    });
+                }
+
+                string oldName = _category.Name;
+                _category.Name = changeCategoryModel.NewName;
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Se ha actualizado el nombre de la categoria " + oldName + " a: " + _category.Name
+                });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = e.Message
+                });
+            }
         }
 
         [Authorize]
         [HttpDelete]
         [Route("Delete")]
-        public dynamic DeleteCategory(Category category)
+        public async Task<IActionResult> DeleteCategory([FromBody] Category category)
         {
-            bool success = true;
-            string message = "";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success) return Unauthorized(new { success = false, message = "Token inválido" });
 
             User user = token.result;
 
             if (user.Roles != "[ROLE_ADMIN]")
             {
-                return new
-                {
-                    success = false,
-                    message = "Necesita permisos de administrador para utilizar este recurso",
-                };
+                return StatusCode(StatusCodes.Status403Forbidden, new { success = false, message = "Necesita permisos de administrador para utilizar este recurso" });
             }
+
             try
             {
-                Category _category = _listedCategoryQueryBP.FirstOrDefault(c => c.Id == category.Id);
+                Category _category = await _listedCategoryQueryBP.FirstOrDefaultAsync(c => c.Id == category.Id);
                 if (_category == null)
                 {
-                    throw new Exception("La categoria que desea eliminar no existe");
+                    return NotFound(new { success = false, message = "La categoria que desea eliminar no existe" });
                 }
-                _category.IsDeleted= true;
-                _context.SaveChanges();
-                message = "Se ha eliminado la categoria " + category.Name;
+                _category.IsDeleted = true;
+                await _context.SaveChangesAsync();
+                return Ok(new { success = true, message = "Se ha eliminado la categoria " + category.Name });
             }
             catch (Exception e)
             {
-                success = false;
-                message = e.Message;
+                return StatusCode(500, new { success = false, message = e.Message });
             }
-            return new
-            {
-                success = success,
-                message = message,
-            };
         }
     }
 }
