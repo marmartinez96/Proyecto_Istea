@@ -54,16 +54,16 @@ namespace ProdigyPlanningAPI.Controllers
         [AllowAnonymous]
         [HttpGet]
         [Route("GetEvents")]
-        public async Task<IActionResult> GetEventsByCategory([FromBody] Category category)
+        public async Task<IActionResult> GetEventsByCategory([FromQuery] int categoryId)
         {
-            if (category.Id == 0)
+            if (categoryId == 0)
             {
                 return BadRequest(new { success = false, message = "Debe ingresar un id de categoria valido" });
             }
 
             try
             {
-                Category _category = await _listedCategoryQueryBP.FirstOrDefaultAsync(c => c.Id == category.Id);
+                Category _category = await _listedCategoryQueryBP.FirstOrDefaultAsync(c => c.Id == categoryId);
                 if (_category == null)
                 {
                     return NotFound(new { success = false, message = "La categoria que esta buscando no existe" });

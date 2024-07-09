@@ -110,20 +110,20 @@ namespace ProdigyPlanningAPI.Controllers
         [AllowAnonymous]
         [HttpGet]
         [Route("GetById")]
-        public async Task<IActionResult> GetEventById(Event evnt)
+        public async Task<IActionResult> GetEventById([FromQuery]int id)
         {
             bool success = true;
             string message = "Success";
             EventRetrievalModel result = null;
             try
             {
-                if (evnt.Id == null || evnt.Id <= 0)
+                if (id == 0)
                 {
                     return BadRequest(new { success = false, message = "Debe enviar un numero id valido" });
                 }
                 
-                Event _event = await _activeEventQueryBP.FirstOrDefaultAsync(x => x.Id == evnt.Id);
-                if (evnt.Id == null)
+                Event _event = await _activeEventQueryBP.FirstOrDefaultAsync(x => x.Id == id);
+                if (_event == null)
                 {
                     return NotFound(new { success = false, message = "No se encontró ese evento en la base de datos" });
                 }
@@ -147,79 +147,10 @@ namespace ProdigyPlanningAPI.Controllers
         //
         //Este metodo no puede hacer uso de los queryBP porque necesita modificar los filtros dinamicamente y no queremos alterar los BP a nivel clase.
         //
-        /*
         [AllowAnonymous]
         [HttpGet]
         [Route("GetByFilters")]
-        public async Task<IActionResult> GetByfilter(FilterEventModel filter)
-        {
-            bool success = true;
-            string message = "Success";
-            List<EventRetrievalModel> result = new List<EventRetrievalModel>();
-            try
-            {
-                IQueryable<Event> query = _context.Events
-                    .Include(x => x.CreatedByNavigation)
-                    .Include(x => x.Categories)
-                    .Include(x => x.Banner)
-                    .Where(x => x.IsDeleted == false);
-
-                if (filter.Name != null)
-                {
-                    query = query.Where(x => x.Name == filter.Name);
-                }
-
-                if (filter.CategoryId != null)
-                {
-                    Category _cat = await _listedCategoryQueryBP.FirstOrDefaultAsync(x => x.Id == filter.CategoryId);
-                    if (_cat == null)
-                    {
-                        return NotFound(new { success = false, message = "La categoria que intenta buscar no existe" });
-                    }
-                    query = query.Where(x => x.Categories.Contains(_cat));
-                }
-                
-                if (filter.FromDate != DateOnly.MinValue)
-                {
-                    query = query.Where(x => x.Date >= filter.FromDate);
-                }
-
-                if (filter.ToDate != DateOnly.MaxValue)
-                {
-                    query = query.Where(x => x.Date <= filter.ToDate);
-                }
-
-                if (filter.IsActive == true)
-                {
-                    query = query.Where(x => x.IsActive == true);
-                }
-
-                var events = await query.ToListAsync();
-
-                foreach (Event e in events)
-                {
-                    result.Add(EventRetrievalHelper.CreateRetrievalModel(_context, e));
-                }
-            }
-            catch (Exception e)
-            {
-                success = false;
-                message = e.Message;
-            }
-            return Ok(new
-            {
-                success = success,
-                message = message,
-                count = result.Count,
-                result = result
-            });
-        }
-        */
-
-        [AllowAnonymous]
-        [HttpGet]
-        [Route("GetByFilters")]
-        public dynamic GetByfilter([FromQuery]string? name, [FromQuery] int? category, [FromQuery] int fromDate, [FromQuery] int toDate, [FromQuery] bool isActive = false)
+        public async Task<IActionResult> GetByfilter([FromQuery]string? name, [FromQuery] int? category, [FromQuery] int fromDate, [FromQuery] int toDate, [FromQuery] bool isActive = false)
         {
             FilterEventModel filter = new FilterEventModel();
             filter.Name = name;
@@ -251,7 +182,7 @@ namespace ProdigyPlanningAPI.Controllers
                 }
                 if (filter.CategoryId != null)
                 {
-                    Category _cat = _listedCategoryQueryBP.FirstOrDefault(x => x.Id == filter.CategoryId);
+                    Category _cat = await _listedCategoryQueryBP.FirstOrDefaultAsync(x => x.Id == filter.CategoryId);
                     if (_cat == null)
                     {
                         throw new Exception("La categoria que intenta buscar no existe");
@@ -260,7 +191,7 @@ namespace ProdigyPlanningAPI.Controllers
                 }
                 if (filter.FromDate != DateOnly.MinValue)
                 {
-                    query = query.Where(x => x.Date >= filter.FromDate);
+                    query =query.Where(x => x.Date >= filter.FromDate);
                 }
                 if (filter.ToDate != DateOnly.MaxValue)
                 {
@@ -271,7 +202,7 @@ namespace ProdigyPlanningAPI.Controllers
                     query = query.Where(x => x.IsActive == true);
                 }
 
-                foreach (Event e in query.ToList())
+                foreach (Event e in await query.ToListAsync())
                 {
                     result.Add(EventRetrievalHelper.CreateRetrievalModel(_context, e));
                 }
@@ -281,15 +212,14 @@ namespace ProdigyPlanningAPI.Controllers
                 success = false;
                 message = e.Message;
             }
-            return new
+            return Ok(new
             {
                 success = success,
                 message = message,
-                count = result.Count(),
+                count = result.Count,
                 result = result
-            };
+            });
         }
-
 
         ///
         ///Estoy seguro que aca faltan un monton de validaciones
@@ -297,19 +227,23 @@ namespace ProdigyPlanningAPI.Controllers
         [AllowAnonymous]
         [HttpGet]
         [Route("GetByPeriod")]
-        public async Task<IActionResult> GetEventByPeriod(PeriodModel? model)
+        public async Task<IActionResult> GetEventByPeriod([FromQuery]string cdPeriod)
         {
             bool success = true;
             string message = "Success";
-            string cdPeriod;
             List<EventRetrievalModel> result = new List<EventRetrievalModel>();
             try
             {
-                if (model == null || model.cd == null || model.cd.Trim() == "" || model.cd.Count() > 6)
+                if (cdPeriod.Count() > 6)
                 {
-                    model = new PeriodModel();
+                    return BadRequest(new { success = false, message = "Debe enviar un codigo de periodo con el formato mmyyyy" });
+
                 }
-                cdPeriod = model.cd.Trim();
+                if (cdPeriod == null || cdPeriod.Trim() == "")
+                {
+                    cdPeriod = DateTime.Now.Month.ToString().PadLeft(2, '0') + DateTime.Now.Year.ToString();
+                }
+                cdPeriod = cdPeriod.Trim();
 
                 DateOnly? firstDayPeriod = cdPeriodToDateTime(cdPeriod);
                 DateOnly? lastDayPeriod = cdPeriodToDateTime(cdPeriod).AddMonths(1).AddDays(-1);
@@ -772,41 +706,50 @@ namespace ProdigyPlanningAPI.Controllers
             };
         }
 
+
         [HttpGet]
         [Route("GetBanner")]
-        public async Task<dynamic> GetBanner(Event evnt)
+        public dynamic GetBanner([FromQuery]int id)
         {
-            bool success = true;
-            string message = "Imagen recuperada con éxito";
-            string data = "";
+            //bool success = true;
+            //string message = "Imagen recuperada con exito";
+            //string data = "";
 
             try
             {
-                Event _event = await _activeEventQueryBP.FirstOrDefaultAsync(x => x.Id == evnt.Id);
-                if (_event == null || evnt.Id == null)
+                Event _event = _listedEventQueryBP.FirstOrDefault(x => x.Id == id);
+                //Event _event = _activeEventQueryBP.FirstOrDefault(x => x.Id == id);
+
+                if (_event == null)
                 {
-                    throw new Exception("Debe enviar un id de evento válido");
+                    throw new Exception("Debe enviar un id de evento valido" + id);
                 }
                 EventBanner image = _event.Banner;
                 if (image == null)
                 {
-                    throw new Exception("El evento que envió no tiene un banner cargado");
+                    throw new Exception("El evento que envio no tiene un banner cargado");
                 }
-                data = Convert.ToBase64String(image.EventImage);
+                //data = Convert.ToBase64String(image.EventImage);
+
+                string base64String = Convert.ToBase64String(image.EventImage);//
+                byte[] imageData = Convert.FromBase64String(base64String);//
+                return File(imageData, "image/png", "banner.png");//
+                                                                  //
+                                                                  //return Ok(new { success = true, message = "Imagen recuperada con exito", data = data });//  
             }
             catch (Exception e)
             {
-                success = false;
-                message = e.Message;
+                return StatusCode(500, e.Message);//
+                                                  //success = false;
+                                                  //message = e.Message;
             }
-            return new
-            {
-                success = success,
-                message = message,
-                data = data
-            };
+            //return new
+            //{
+            //    success = success,
+            //    message = message,
+            //    data = data
+            //};
         }
-
 
         [Authorize]
         [HttpPatch]

@@ -328,7 +328,7 @@ namespace ProdigyPlanningAPI.Controllers
         [Authorize]
         [HttpGet]
         [Route("GetOwnedEvents")]
-        public async Task<IActionResult> GetOwnedEvents([FromQuery] Event evnt)
+        public async Task<IActionResult> GetOwnedEvents([FromQuery]bool isActive)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
@@ -339,7 +339,7 @@ namespace ProdigyPlanningAPI.Controllers
             try
             {
                 List<Event> _events;
-                if (evnt.IsActive == true)
+                if (isActive == true)
                 {
                     _events = await _activeEventQueryBP.Where(x => x.CreatedByNavigation == _user).ToListAsync();
                 }
