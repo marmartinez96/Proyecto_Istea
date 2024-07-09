@@ -556,45 +556,48 @@ namespace ProdigyPlanningAPI.Controllers
         [Authorize]
         [HttpPost]
         [Route("AddBanner")]
-        public dynamic AddBanner([FromForm] IFormFile formFile, [FromForm] int id)
+        public async Task<dynamic> AddBannerAsync([FromForm] IFormFile formFile, [FromForm] int id)
         {
             bool success = true;
-            string message = "El banner fue agregado con exito";
+            string message = "El banner fue agregado con éxito";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
             if (!token.success) return token;
 
             User user = token.result;
-            EventRetrievalModel result = null; 
+            EventRetrievalModel result = null;
 
             try
             {
-                Event _event = _activeEventQueryBP.FirstOrDefault(x => x.Id == id);
+                Event _event = await _activeEventQueryBP.FirstOrDefaultAsync(x => x.Id == id);
                 if (formFile == null)
                 {
-                    throw new Exception("Debe enviar una imagen valida");
+                    throw new Exception("Debe enviar una imagen válida");
                 }
                 if (_event == null)
                 {
-                    throw new Exception("Debe enviar un id de evento valido");
+                    throw new Exception("Debe enviar un id de evento válido");
                 }
                 if (user != _event.CreatedByNavigation)
                 {
-                    throw new Exception("Solo el organizador de un evento puedo modificar el banner");
+                    throw new Exception("Solo el organizador de un evento puede modificar el banner");
                 }
-                EventBanner _eventBanner = _context.EventBanners.FirstOrDefault(x => x.EventId == _event.Id);
+
+                EventBanner _eventBanner = await _context.EventBanners.FirstOrDefaultAsync(x => x.EventId == _event.Id);
                 if (_eventBanner != null)
                 {
                     _context.EventBanners.Remove(_eventBanner);
                 }
 
-                var encoder = new PngEncoder();
                 using (var stream = formFile.OpenReadStream())
                 {
                     using (var output = new MemoryStream())
                     using (Image image = Image.Load(stream))
                     {
-                        if(image.Height > 90 || image.Width > 728) { throw new Exception("La imagen debe tener un tamaño de 728x90 como maximo"); }
+                        if (image.Height > 90 || image.Width > 728)
+                        {
+                            throw new Exception("La imagen debe tener un tamaño máximo de 728x90");
+                        }
 
                         _eventBanner = new EventBanner()
                         {
@@ -604,11 +607,13 @@ namespace ProdigyPlanningAPI.Controllers
                         };
 
                         _context.EventBanners.Add(_eventBanner);
-                        _context.SaveChanges();
+                        await _context.SaveChangesAsync();
                     }
                 }
+
                 _event.Banner = _eventBanner;
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
+
                 result = EventRetrievalHelper.CreateRetrievalModel(_context, _event);
                 //using (MemoryStream stream = new MemoryStream())
                 //{
@@ -631,21 +636,22 @@ namespace ProdigyPlanningAPI.Controllers
                 success = false;
                 message = e.Message;
             }
+
             return new
             {
                 success = success,
                 message = message,
-                result= result
+                result = result
             };
         }
 
         [Authorize]
         [HttpDelete]
         [Route("RemoveBanner")]
-        public dynamic RemoveBanner(Event evnt)
+        public async Task<dynamic> RemoveBanner(Event evnt)
         {
             bool success = true;
-            string message = "El banner fue eliminado con exito";
+            string message = "El banner fue eliminado con éxito";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
             if (!token.success) return token;
@@ -654,11 +660,10 @@ namespace ProdigyPlanningAPI.Controllers
 
             try
             {
-
-                Event _event = _activeEventQueryBP.FirstOrDefault(x => x.Id == evnt.Id);
+                Event _event = await _activeEventQueryBP.FirstOrDefaultAsync(x => x.Id == evnt.Id);
                 if (_event == null)
                 {
-                    throw new Exception("Debe enviar un id de evento valido");
+                    throw new Exception("Debe enviar un id de evento válido");
                 }
                 if (_event.Banner == null)
                 {
@@ -675,7 +680,7 @@ namespace ProdigyPlanningAPI.Controllers
                 }
                 _event.Banner = null;
                 _context.EventBanners.Remove(eventBanner);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
             catch (Exception e)
             {
@@ -691,23 +696,23 @@ namespace ProdigyPlanningAPI.Controllers
 
         [HttpGet]
         [Route("GetBanner")]
-        public dynamic GetBanner(Event evnt)
+        public async Task<dynamic> GetBanner(Event evnt)
         {
             bool success = true;
-            string message = "Imagen recuperada con exito";
+            string message = "Imagen recuperada con éxito";
             string data = "";
 
             try
             {
-                Event _event = _activeEventQueryBP.FirstOrDefault(x => x.Id == evnt.Id);
+                Event _event = await _activeEventQueryBP.FirstOrDefaultAsync(x => x.Id == evnt.Id);
                 if (_event == null || evnt.Id == null)
                 {
-                    throw new Exception("Debe enviar un id de evento valido");
+                    throw new Exception("Debe enviar un id de evento válido");
                 }
                 EventBanner image = _event.Banner;
                 if (image == null)
                 {
-                    throw new Exception("El evento que envio no tiene un banner cargado");
+                    throw new Exception("El evento que envió no tiene un banner cargado");
                 }
                 data = Convert.ToBase64String(image.EventImage);
             }
@@ -724,157 +729,154 @@ namespace ProdigyPlanningAPI.Controllers
             };
         }
 
+
         [Authorize]
         [HttpPatch]
         [Route("AddCategory")]
-        public dynamic AddCategory(EventCategoryModel evnt) 
+        public async Task<IActionResult> AddCategory(EventCategoryModel evnt)
         {
-            bool success = true;
-            string message = "La categoria fue agregada al evento con exito";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success) return Unauthorized(token);
 
             User user = token.result;
 
             try
             {
-                Event _evnt = _activeEventQueryBP.FirstOrDefault(x => x.Id == evnt.Id);
+                Event _evnt = await _activeEventQueryBP.FirstOrDefaultAsync(x => x.Id == evnt.Id);
                 if (_evnt == null)
                 {
-                    throw new Exception("Debe enviar un id de evento valido");
-                }
-                if (user != _evnt.CreatedByNavigation)
-                {
-                    throw new Exception("Solo el organizador puede modificar las categorias de un evento");
+                    return BadRequest(new { success = false, message = "Debe enviar un id de evento valido" });
                 }
 
-                Category _cat = _listedCategoryQueryBP.FirstOrDefault(x => x.Id == evnt.CategoryId);
+                if (user != _evnt.CreatedByNavigation)
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden, new { success = false, message = "Solo el organizador puede modificar las categorias de un evento" });
+                }
+
+                Category _cat = await _listedCategoryQueryBP.FirstOrDefaultAsync(x => x.Id == evnt.CategoryId);
                 if (_cat == null)
                 {
-                    throw new Exception("La categoria que desea agregar no existe");
+                    return BadRequest(new { success = false, message = "La categoria que desea agregar no existe" });
                 }
+
                 if (_evnt.Categories.Contains(_cat))
                 {
-                    throw new Exception("Este evento ya contiene la categoria "+_cat.Name);
+                    return Conflict(new { success = false, message = "Este evento ya contiene la categoria " + _cat.Name });
                 }
-                if (_evnt.Categories.Count()>1)
+
+                if (_evnt.Categories.Count() > 1)
                 {
-                    throw new Exception("Este evento ya pertenece al numero maximo de categorias posibles. Quite una categoria y vuelva a intentar");
+                    return BadRequest(new { success = false, message = "Este evento ya pertenece al numero maximo de categorias posibles. Quite una categoria y vuelva a intentar" });
                 }
+
                 _evnt.Categories.Add(_cat);
                 _cat.Events.Add(_evnt);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
+
+                return Ok(new { success = true, message = "La categoria fue agregada al evento con exito" });
             }
             catch (Exception e)
             {
-                success = false;
-                message = e.Message;
+                return StatusCode(500, new { success = false, message = e.Message });
             }
-            return new
-            {
-                success = success,
-                message = message,
-            };
         }
+
 
         [Authorize]
         [HttpPatch]
         [Route("RemoveCategory")]
-        public dynamic RemoveCategory(EventCategoryModel evnt)
+        public async Task<IActionResult> RemoveCategory(EventCategoryModel evnt)
         {
-            bool success = true;
-            string message = "La categoria fue quitada del evento con exito";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success) return Unauthorized(token);
 
             User user = token.result;
 
             try
             {
-                Event _evnt = _activeEventQueryBP.FirstOrDefault(x => x.Id == evnt.Id);
+                Event _evnt = await _activeEventQueryBP.FirstOrDefaultAsync(x => x.Id == evnt.Id);
                 if (_evnt == null)
                 {
-                    throw new Exception("Debe enviar un id de evento valido");
+                    return BadRequest(new { success = false, message = "Debe enviar un id de evento valido" });
                 }
+
                 if (user != _evnt.CreatedByNavigation)
                 {
-                    throw new Exception("Solo el organizador puede modificar las categorias de un evento");
+                    return StatusCode(StatusCodes.Status403Forbidden, new { success = false, message = "Solo el organizador puede modificar las categorias de un evento" });
                 }
-                Category _cat = _listedCategoryQueryBP.FirstOrDefault(x => x.Id == evnt.CategoryId);
+
+                Category _cat = await _listedCategoryQueryBP.FirstOrDefaultAsync(x => x.Id == evnt.CategoryId);
                 if (_cat == null)
                 {
-                    throw new Exception("La categoria que desea eliminar del evento no existe");
+                    return BadRequest(new { success = false, message = "La categoria que desea eliminar del evento no existe" });
                 }
+
                 if (!_evnt.Categories.Contains(_cat))
                 {
-                    throw new Exception("El evento no contiene la categoria que desea eliminar");
+                    return Conflict(new { success = false, message = "El evento no contiene la categoria que desea eliminar" });
                 }
+
                 if (_evnt.Categories.Count() < 2)
                 {
-                    throw new Exception("Si se quita la categoria "+_cat.Name+" el evento se qeudaria sin categorias. Agrege por lo menos una categoria mas antes de quitar esta o utilice el metodo de reemplazo.");
+                    return BadRequest(new { success = false, message = "Si se quita la categoria " + _cat.Name + " el evento se quedaria sin categorias. Agrege por lo menos una categoria mas antes de quitar esta o utilice el metodo de reemplazo." });
                 }
+
                 _evnt.Categories.Remove(_cat);
                 _cat.Events.Remove(_evnt);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
+
+                return Ok(new { success = true, message = "La categoria fue quitada del evento con exito" });
             }
             catch (Exception e)
             {
-                success = false;
-                message = e.Message;
+                return StatusCode(500, new { success = false, message = e.Message });
             }
-            return new
-            {
-                success = success,
-                message = message,
-            };
         }
 
         [Authorize]
         [HttpPatch]
         [Route("ReplaceCategory")]
-        public dynamic ReplaceCategory(EventCategoryReplaceModel evnt)
+        public async Task<IActionResult> ReplaceCategory(EventCategoryReplaceModel evnt)
         {
-            bool success = true;
-            string message = "";
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var token = AuthorizationHelper.ValidateToken(identity, _context);
-            if (!token.success) return token;
+            if (!token.success) return Unauthorized(token);
 
             User user = token.result;
 
             Event _evnt = null;
             try
             {
-                _evnt = _activeEventQueryBP.FirstOrDefault(x => x.Id == evnt.EventId);
+                _evnt = await _activeEventQueryBP.FirstOrDefaultAsync(x => x.Id == evnt.EventId);
                 if (_evnt == null)
                 {
-                    throw new Exception("Debe enviar un id de evento valido");
+                    return BadRequest(new { success = false, message = "Debe enviar un id de evento valido" });
                 }
                 if (user != _evnt.CreatedByNavigation)
                 {
-                    throw new Exception("Solo el organizador puede modificar las categorias de un evento");
+                    return StatusCode(StatusCodes.Status403Forbidden, new { success = false, message = "Solo el organizador puede modificar las categorias de un evento" });
                 }
 
-                Category _cat0 = _listedCategoryQueryBP.FirstOrDefault(x => x.Id == evnt.ReplaceId);
+                Category _cat0 = await _listedCategoryQueryBP.FirstOrDefaultAsync(x => x.Id == evnt.ReplaceId);
                 if (_cat0 == null)
                 {
-                    throw new Exception("La categoria que desea reemplazar no existe");
+                    return BadRequest(new { success = false, message = "La categoria que desea reemplazar no existe" });
                 }
                 if (!_evnt.Categories.Contains(_cat0))
                 {
-                    throw new Exception("Este evento no contiene la categoria " + _cat0.Name);
+                    return Conflict(new { success = false, message = "Este evento no contiene la categoria " + _cat0.Name });
                 }
 
-                Category _cat1 = _listedCategoryQueryBP.FirstOrDefault(x => x.Id == evnt.ReplacementId);
+                Category _cat1 = await _listedCategoryQueryBP.FirstOrDefaultAsync(x => x.Id == evnt.ReplacementId);
                 if (_cat1 == null)
                 {
-                    throw new Exception("La categoria con la que desea reemplazar a "+ _cat0.Name+" no existe");
+                    return BadRequest(new { success = false, message = "La categoria con la que desea reemplazar a " + _cat0.Name + " no existe" });
                 }
                 if (_evnt.Categories.Contains(_cat1))
                 {
-                    throw new Exception("Este evento ya contiene la categoria " + _cat1.Name);
+                    return Conflict(new { success = false, message = "Este evento ya contiene la categoria " + _cat1.Name });
                 }
 
                 _evnt.Categories.Remove(_cat0);
@@ -883,21 +885,17 @@ namespace ProdigyPlanningAPI.Controllers
                 _evnt.Categories.Add(_cat1);
                 _cat1.Events.Add(_evnt);
 
-                message = "Se reemplazo la categoria " + _cat0.Name + " a " + _cat1.Name;
-                _context.SaveChanges();
+                var message = "Se reemplazo la categoria " + _cat0.Name + " a " + _cat1.Name;
+                await _context.SaveChangesAsync();
+
+                return Ok(new { success = true, message = message, data = EventRetrievalHelper.CreateRetrievalModel(_context, _evnt) });
             }
             catch (Exception e)
             {
-                success = false;
-                message = e.Message;
+                return StatusCode(500, new { success = false, message = e.Message });
             }
-            return new
-            {
-                success = success,
-                message = message,
-                data = EventRetrievalHelper.CreateRetrievalModel(_context, _evnt)
-            };
         }
+
 
         private DateOnly cdPeriodToDateTime(string cdPeriod)
         {
