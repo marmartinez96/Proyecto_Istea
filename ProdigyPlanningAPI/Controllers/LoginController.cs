@@ -10,6 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using ProdigyPlanningAPI.Helpers;
 
 
 namespace ProdigyPlanningAPI.Controllers
@@ -195,5 +196,39 @@ namespace ProdigyPlanningAPI.Controllers
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
+
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("Signup/GetQuestions")]
+        public async Task<IActionResult> GetQuestions()
+        {
+            try
+            {
+                var result = new List<SecurityQuestion>();
+                var events = await _context.SecurityQuestions.OrderBy(x => x.Id).ToListAsync();
+
+                foreach (var e in events)
+                {
+                    result.Add(e);
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Success",
+                    count = result.Count,
+                    result = result
+                });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = e.Message
+                });
+            }
+        }
+
     }
 }
