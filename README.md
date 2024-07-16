@@ -10,3 +10,7 @@ Para instalar el proyecto backend se deben seguir los siguientes pasos:
   <li>Abrir la consola administrador de paquetes y correr el siguiendo comando `Update-Database`, esto creara todas las tablas necesarias en la base de datos</li>
   <li>Por ultimo, correr el resto de los scripts guardados en `Proyecto_Istea\database\querys`</li>
 </ol>  
+
+Para probar el proyecto se adjunta una version levemente desactualizadad de las colecciones utilizadas para verificar los endpoints utilizando postman.
+Las colecciones para importar se encuentran en `Proyecto_Istea\Postman`
+Los metodos desactualizados son event/getBanner ya que se encuentra en un estado no complemtante funcional (fue parcheado temporalmente para solucionar un problema del front), y aquellos metodos Get que necesiten recibir parametros, desde la ultima actualizacion estos metodos toman parametros en forma de querystring en el url al hacer la peticion.
